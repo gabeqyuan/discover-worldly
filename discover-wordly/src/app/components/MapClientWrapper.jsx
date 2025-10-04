@@ -46,7 +46,13 @@ export default function MapClientWrapper() {
         setLoading(true);
         setError(null);
         
-        fetch(`/api/spotify/country-tracks?countryCode=${country}`)
+        // Build URL with optional user token for better access
+        let url = `/api/spotify/country-tracks?countryCode=${country}`;
+        if (accessToken) {
+            url += `&userToken=${encodeURIComponent(accessToken)}`;
+        }
+        
+        fetch(url)
             .then((r) => r.json())
             .then((data) => {
                 if (!mounted) return;
@@ -75,7 +81,7 @@ export default function MapClientWrapper() {
         return () => {
             mounted = false;
         };
-    }, [country]);
+    }, [country, accessToken]);
 
     return (
         <div>
