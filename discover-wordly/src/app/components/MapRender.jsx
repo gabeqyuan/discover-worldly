@@ -2,7 +2,7 @@
 import mapboxgl from 'mapbox-gl'
 import { useEffect, useRef, useState } from 'react';
 
-export default function MapRender({ onMapClick } = {}) {
+export default function MapRender({ coordnates }) {
     const mapRef = useRef(null);
     const [coords, setCoords] = useState(null); // { lng, lat }
 
@@ -10,13 +10,7 @@ export default function MapRender({ onMapClick } = {}) {
         mapboxgl.accessToken = 'pk.eyJ1IjoicGZpc2giLCJhIjoiY21nY2N4dWE1MG1pbjJpcG03YjAxZXR3aiJ9.LgdHEWWRc36shcetIf4EGQ';
         const map = new mapboxgl.Map({
             container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/standard',
-            config: {
-                basemap: {
-                    lightPreset: "dawn",
-                    colorMotorways: "#abc7eb",
-                }
-            },
+            style: 'mapbox://styles/pfish/cmgcfynxg00ec01qw6ji591zs',
             center: [0,0], // starting position [lng, lat]
             zoom: 2, // starting zoom
             maxZoom: 4,
@@ -25,14 +19,12 @@ export default function MapRender({ onMapClick } = {}) {
 
         mapRef.current = map;
 
-        // Click handler to store coords and place/update a marker
+        // click handler to store coords
         const handleClick = (e) => {
-            // e.lngLat is a Mapbox LngLat object with lng and lat properties
             const lng = e.lngLat.lng;
             const lat = e.lngLat.lat;
             setCoords({ lng, lat });
 
-            console.log(lng, lat);
             // call optional callback
             if (typeof onMapClick === 'function') {
                 try { onMapClick({ lng, lat }); } catch (err) { /* ignore callback errors */ }
