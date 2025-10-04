@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MapRender from "./MapRender";
 import SwipeDeck from "./SwipeDeck";
 import PlaylistBuilder from "./PlaylistBuilder";
@@ -11,9 +11,12 @@ export default function MapClientWrapper() {
     const [responseMsg, setResponseMsg] = useState([]);
     const [likedSongs, setLikedSongs] = useState([]);
     const [dislikedSongs, setDislikedSongs] = useState([]);
+    const [tracks, setTracks] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     // small sample track list to pass into the SwipeDeck for testing
-    const sampleTracks = [
+    const SAMPLE_TRACKS = [
     {
         id: "1",
         title: "Blinding Lights",
@@ -30,6 +33,46 @@ export default function MapClientWrapper() {
     },
     ];
 
+    // We'll fetch the playlist from our Next API route and populate the deck.
+    // Switched to a known-public playlist (Today's Top Hits) for testing so the deck populates.
+    const DEFAULT_PLAYLIST = "37i9dQZF1DXcBWIGoYBM5M"; // Today's Top Hits
+
+    useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    fetch(`/api/spotify/playlist?playlistId=${DEFAULT_PLAYLIST}`)
+        .then((r) => r.json())
+        .then((data) => {
+            if (!mounted) return;
+            // log full response for debugging in dev
+            console.debug("/api/spotify/playlist ->", data);
+
+            if (data && data.error) {
+            // API returned an error (likely missing env vars or token problem)
+            setError(data.error + (data.details ? `: ${data.details}` : ""));
+            // fallback to sample tracks so UI remains usable
+            setTracks(SAMPLE_TRACKS);
+            } else {
+            setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+            }
+        })
+        .catch((err) => {
+            console.error("Failed to fetch playlist", err);
+            if (mounted) {
+            setError(String(err));
+            setTracks(SAMPLE_TRACKS);
+            }
+        })
+        .finally(() => {
+            if (mounted) setLoading(false);
+        });
+
+        return () => {
+        mounted = false;
+        };
+    }, []);
+
     return (
         <div>
             <MapRender onCountryChange={(c) => {
@@ -45,14 +88,14 @@ export default function MapClientWrapper() {
                     }
                 />
             )} */}
-            <Loading />
+            {/* <Loading /> */}
 
             {isVoting && (
                 <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
                         <SwipeDeck
-                            tracks={sampleTracks}
+                            tracks={SAMPLE_TRACKS}
                             onLike={(t) => {
                                 console.log("Liked", t);
                                 setLikedSongs((prev) => [...prev, t]);
