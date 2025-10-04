@@ -5,7 +5,11 @@
   --foreground: #171717;
 }
 
-@theme inline {
+/* Replaced invalid `@theme inline {}` at-rule with a compatible CSS class.
+   Some tooling or preprocessors use `@theme` (not standard). Defining a
+   class keeps the same variables available if you want to toggle this
+   theme at runtime by adding `class="theme--inline"` to a root element. */
+.theme--inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
