@@ -44,36 +44,40 @@ export default function Home() {
 
       {!accessToken && (
         <div className="fixed inset-0 z-10 flex flex-col items-center justify-center">
-          <div className="text-center mb-12">
-            <h1 className="text-8xl font-bold text-white mb-4 tracking-tight leading-none">
-              Discover Worldly
-            </h1>
-            <div className="w-24 h-1 mx-auto bg-gradient-to-r from-white/0 via-white to-white/0"></div>
+          <div className="text-center mb-16">
+            <div className="relative inline-block">
+              <h1 className="text-9xl font-black text-white mb-4 tracking-tight leading-none">
+                Discover Worldly
+              </h1>
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-30 blur-2xl -z-10 rounded-full"></div>
+            </div>
+            <div className="flex justify-center items-center gap-3 mt-6">
+              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent"></div>
+              <span className="text-white/60 text-xl tracking-wide">CONNECT • EXPLORE • DISCOVER</span>
+              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent"></div>
+            </div>
           </div>
           
-          <div 
-            className="max-w-2xl w-full px-12 py-10 backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl"
-            style={{
-              background: 'linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-            }}
-          >
-            <div className="space-y-8">
-              <p className="text-2xl text-white/90 text-center">
+          <div className="max-w-2xl w-full px-12 py-12 backdrop-blur-xl bg-black/20 border border-white/10 rounded-3xl shadow-2xl transform hover:scale-[1.01] transition-all duration-300">
+            <div className="space-y-10">
+              <p className="text-3xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 font-semibold text-center">
                 Your Musical Journey Around the World
               </p>
-              <ul className="text-lg text-white/80 space-y-3">
-                <li className="flex items-center">
-                  <span className="mr-3">🌍</span> Explore music from every corner of the Earth
+              <ul className="text-xl text-white/90 space-y-6">
+                <li className="flex items-center transform hover:translate-x-2 transition-transform duration-200">
+                  <span className="mr-4 text-2xl">🌍</span> Explore music from every corner of the Earth
                 </li>
-                <li className="flex items-center">
-                  <span className="mr-3">🎵</span> Find hidden gems from local artists
+                <li className="flex items-center transform hover:translate-x-2 transition-transform duration-200">
+                  <span className="mr-4 text-2xl">🎵</span> Find hidden gems from local artists
                 </li>
-                <li className="flex items-center">
-                  <span className="mr-3">✨</span> Create your own global playlist
+                <li className="flex items-center transform hover:translate-x-2 transition-transform duration-200">
+                  <span className="mr-4 text-2xl">✨</span> Create your own global playlist
                 </li>
               </ul>
-              <div className="flex justify-center transform hover:scale-105 transition-transform duration-300">
-                <LoginButton onLogin={setAccessToken} />
+              <div className="flex justify-center mt-8">
+                <div className="transform hover:scale-105 hover:rotate-1 transition-all duration-300">
+                  <LoginButton onLogin={setAccessToken} />
+                </div>
               </div>
             </div>
           </div>
@@ -81,55 +85,41 @@ export default function Home() {
       )}
 
       {accessToken && (
-        <>
-          <div className="fixed top-6 right-24 z-50">
-            <div 
-              className="flex items-center gap-6 p-4 rounded-2xl backdrop-blur-lg bg-white/5 border border-white/20 shadow-lg"
-              style={{
-                background: 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
-              }}
-            >
-              {profile && (
-                <div className="flex items-center gap-4">
-                  {profile.images?.[0] && (
-                    <img 
-                      src={profile.images[0].url} 
-                      alt="Profile"
-                      className="w-12 h-12 rounded-full border-2 border-white/30 shadow-lg"
-                    />
-                  )}
-                  <div className="text-white">
-                    <div className="font-semibold text-lg">{profile.display_name || profile.id}</div>
-                    <div className="text-sm text-white/75">{profile.email}</div>
-                  </div>
+        <div className="fixed top-6 right-6 z-50 flex flex-col items-end gap-3">
+          <div className="flex items-center gap-4 py-2.5 px-4 rounded-xl backdrop-blur-md bg-black/20 border border-white/10 shadow-lg hover:bg-black/30 transition-colors duration-200">
+            {profile && (
+              <>
+                {profile.images?.[0] && (
+                  <img 
+                    src={profile.images[0].url} 
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full border border-white/30 shadow-lg"
+                  />
+                )}
+                <div className="text-white">
+                  <div className="font-semibold text-sm">{profile.display_name || profile.id}</div>
+                  <div className="text-xs text-white/75">{profile.email}</div>
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
           
-          <div className="fixed top-6 right-6 z-50">
+          <div className="scale-90 origin-right">
             <LogoutButton onLogout={() => { 
               setAccessToken(null);
               setProfile(null);
             }} />
           </div>
-        </>
+        </div>
       )}
 
       {accessToken && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20">
-          <div 
-            className="backdrop-blur-lg bg-white/5 border border-white/20 rounded-2xl p-4 shadow-lg"
-            style={{
-              background: 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
-            }}
-          >
-            <SongCard
-              track={sampleTrack}
-              onLike={(t) => console.log("Liked", t)}
-              onSkip={(t) => console.log("Skipped", t)}
-            />
-          </div>
+          <SongCard
+            track={sampleTrack}
+            onLike={(t) => console.log("Liked", t)}
+            onSkip={(t) => console.log("Skipped", t)}
+          />
         </div>
       )}
     </main>
