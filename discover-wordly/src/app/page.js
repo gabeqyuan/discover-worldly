@@ -1,7 +1,7 @@
-import Image from "next/image";
+import MapRender from "./components/MapRender";
 
 export default function Home() {
   return (
-    <div>Hello World</div>
+    <MapRender/>
   );
 }
