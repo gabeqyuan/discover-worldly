@@ -1,4 +1,3 @@
-"use client"
 import mapboxgl from 'mapbox-gl'
 import { useEffect, useRef, useState } from 'react';
 
@@ -31,7 +30,7 @@ export default function MapRender({ onCountryChange }) {
                 }
                 const reverse_geocoding = await response.json();
                 const country = reverse_geocoding.features[reverse_geocoding.features.length - 1].properties.context.country.country_code;
-                
+
                 if (typeof onCountryChange === 'function') onCountryChange(country);
             } catch (error) {
                 console.error('Error fetching countries:', error);

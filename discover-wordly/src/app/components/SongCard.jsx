@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useRef, useState, useEffect } from "react";
 
 // React component for a Tinder-style swipe card for songs

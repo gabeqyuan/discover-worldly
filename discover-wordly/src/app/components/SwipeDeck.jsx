@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import SongCard from "./SongCard";
 import { motion, AnimatePresence } from "framer-motion";
 
