@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import LoginButton from './LoginButton';
 
 export default function LandingPage() {
-  const { setAccessToken } = useAuth();
+  const { setAccessToken, authError } = useAuth();
   
   return (
     <div className="fixed inset-0 z-10 flex flex-col items-center justify-center text-center backdrop-blur-sm">
@@ -14,6 +14,19 @@ export default function LandingPage() {
       <p className="text-white/80 text-2xl font-medium mb-5 font-montserrat">
         Global sounds, local vibes — all in one place.
       </p>
+      
+      {authError && (
+        <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-5 max-w-md mx-auto">
+          <p className="text-red-200 text-sm font-medium mb-2">Authentication Error:</p>
+          <p className="text-red-100 text-sm">{authError}</p>
+          {authError.includes('Development Mode') && (
+            <p className="text-red-100 text-xs mt-2 italic">
+              The app is currently in development. Public access will be available soon!
+            </p>
+          )}
+        </div>
+      )}
+      
       <div className="mt-1">
         <LoginButton onLogin={setAccessToken} />
       </div>
