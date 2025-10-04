@@ -2,9 +2,8 @@
 import mapboxgl from 'mapbox-gl'
 import { useEffect, useRef, useState } from 'react';
 
-export default function MapRender({ setCoords }) {
+export default function MapRender({ onCountryChange }) {
     const mapRef = useRef(null);
-    const [country, setCountry] = useState(null);
 
     useEffect(() => {
         mapboxgl.accessToken = 'pk.eyJ1IjoicGZpc2giLCJhIjoiY21nY2N4dWE1MG1pbjJpcG03YjAxZXR3aiJ9.LgdHEWWRc36shcetIf4EGQ';
@@ -24,11 +23,6 @@ export default function MapRender({ setCoords }) {
             const lng = e.lngLat.lng;
             const lat = e.lngLat.lat;
 
-            // call optional callback
-            // if (typeof onMapClick === 'function') {
-            //     try { onMapClick({ lng, lat }); } catch (err) { /* ignore callback errors */ }
-            // }
-
             try {
                 const response = await fetch(`https://api.mapbox.com/search/geocode/v6/reverse?longitude=${lng}&latitude=${lat}&access_token=pk.eyJ1IjoicGZpc2giLCJhIjoiY21nY2N4dWE1MG1pbjJpcG03YjAxZXR3aiJ9.LgdHEWWRc36shcetIf4EGQ`);
                 if (!response.ok) {
@@ -36,8 +30,8 @@ export default function MapRender({ setCoords }) {
                 }
                 const reverse_geocoding = await response.json();
                 const country = reverse_geocoding.features[reverse_geocoding.features.length - 1].properties.context.country.country_code;
-                setCountry(country);
-                console.log(country);
+                
+                if (typeof onCountryChange === 'function') onCountryChange(country);
             } catch (error) {
                 console.error('Error fetching countries:', error);
             }
