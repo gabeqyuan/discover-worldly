@@ -5,6 +5,9 @@ import SwipeDeck from "./SwipeDeck";
 
 export default function MapClientWrapper() {
     const [country, setCountry] = useState(null);
+    const [isVoting, setIsVoting] = useState(false);
+    const [likedSongs, setLikedSongs] = useState([]);
+    const [dislikedSongs, setDislikedSongs] = useState([]);
 
     // small sample track list to pass into the SwipeDeck for testing
     const sampleTracks = [
@@ -27,10 +30,13 @@ export default function MapClientWrapper() {
     return (
         <div>
             <div style={{ width: "100%", maxWidth: 1000, minHeight: 240 }}>
-                <MapRender onCountryChange={(c) => setCountry(c)} />
+                <MapRender onCountryChange={(c) => {
+                    setCountry(c);
+                    setIsVoting(true);
+                }} />
             </div>
 
-            <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+            {isVoting && <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                 <div style={{ width: 380 }}>
                 <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
                 <SwipeDeck
@@ -42,7 +48,7 @@ export default function MapClientWrapper() {
                     {country ? <div>Selected country: {country.toUpperCase()}</div> : <div>No country selected</div>}
                 </div>
                 </div>
-            </section>
+            </section>}
         </div>
     );
 }
