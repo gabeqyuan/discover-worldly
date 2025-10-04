@@ -16,8 +16,9 @@ export default function MapClientWrapper() {
     const [likedSongs, setLikedSongs] = useState([]);
     const [dislikedSongs, setDislikedSongs] = useState([]);
     const [tracks, setTracks] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [trackSource, setTrackSource] = useState(null); // "country", "continent", or "global"
 
     // small sample track list to pass into the SwipeDeck for testing
     const SAMPLE_TRACKS = [
@@ -37,50 +38,50 @@ export default function MapClientWrapper() {
     },
     ];
 
-    // We'll fetch the playlist from our Next API route and populate the deck.
-    // Switched to a known-public playlist (Today's Top Hits) for testing so the deck populates.
-    const DEFAULT_PLAYLIST = "37i9dQZF1DXcBWIGoYBM5M"; // Today's Top Hits
-
+    // Fetch country-specific tracks when country changes
     useEffect(() => {
+        if (!country) return;
+        
         let mounted = true;
         setLoading(true);
         setError(null);
-        fetch(`/api/spotify/playlist?playlistId=${DEFAULT_PLAYLIST}`)
+        
+        fetch(`/api/spotify/country-tracks?countryCode=${country}`)
             .then((r) => r.json())
             .then((data) => {
                 if (!mounted) return;
-                // log full response for debugging in dev
-                console.debug("/api/spotify/playlist ->", data);
+                console.debug("/api/spotify/country-tracks ->", data);
 
-            if (data && data.error) {
-            // API returned an error (likely missing env vars or token problem)
-            setError(data.error + (data.details ? `: ${data.details}` : ""));
-            // fallback to sample tracks so UI remains usable
-            setTracks(SAMPLE_TRACKS);
-            } else {
-            setTracks(data.tracks && data.tracks.length ? data.tracks : []);
-            }
-        })
-        .catch((err) => {
-            console.error("Failed to fetch playlist", err);
-            if (mounted) {
-            setError(String(err));
-            setTracks(SAMPLE_TRACKS);
-            }
-        })
-        .finally(() => {
-            if (mounted) setLoading(false);
-        });
+                if (data && data.error) {
+                    setError(data.error + (data.details ? `: ${data.details}` : ""));
+                    setTracks(SAMPLE_TRACKS);
+                    setTrackSource("error");
+                } else {
+                    setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+                    setTrackSource(data.source); // "country", "continent", or "global"
+                }
+            })
+            .catch((err) => {
+                console.error("Failed to fetch country tracks", err);
+                if (mounted) {
+                    setError(String(err));
+                    setTracks(SAMPLE_TRACKS);
+                    setTrackSource("error");
+                }
+            })
+            .finally(() => {
+                if (mounted) setLoading(false);
+            });
 
         return () => {
             mounted = false;
         };
-    }, []);
+    }, [country]);
 
     return (
         <div>
             {/* Show LandingPage overlay if not authenticated */}
-            {!accessToken && <LandingPage />}
+            {/* {!accessToken && <LandingPage />} */}
             
             {/* Show logout button when authenticated */}
             {accessToken && (
@@ -127,8 +128,20 @@ export default function MapClientWrapper() {
                 <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
+                        {loading ? (
+                            <div style={{ textAlign: "center", padding: "40px", color: "white" }}>
+                                <div style={{ fontSize: 24, marginBottom: 12 }}>🎵</div>
+                                <div>Loading tracks...</div>
+                            </div>
+                        ) : error ? (
+                            <div style={{ textAlign: "center", padding: "40px", color: "#ef4444" }}>
+                                <div style={{ fontSize: 24, marginBottom: 12 }}>⚠️</div>
+                                <div>Error: {error}</div>
+                                <div style={{ fontSize: 14, marginTop: 8, color: "#999" }}>Using sample tracks</div>
+                            </div>
+                        ) : null}
                         <SwipeDeck
-                            tracks={SAMPLE_TRACKS}
+                            tracks={tracks || SAMPLE_TRACKS}
                             onLike={(t) => {
                                 console.log("Liked", t);
                                 setLikedSongs((prev) => [...prev, t]);
@@ -139,8 +152,23 @@ export default function MapClientWrapper() {
                             }}
                             deckEmpty={(c) => setIsVoting(!c)}
                         />
-                        <div style={{ textAlign: "center", marginTop: 8 }}>
-                            {country ? <div>Selected country: {country.toUpperCase()}</div> : <div>No country selected</div>}
+                        <div style={{ textAlign: "center", marginTop: 16, color: "white" }}>
+                            {country ? (
+                                <div>
+                                    <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>
+                                        {country.toUpperCase()}
+                                    </div>
+                                    {trackSource && trackSource !== "error" && (
+                                        <div style={{ fontSize: 13, opacity: 0.7 }}>
+                                            {trackSource === "country" && "🎵 Top songs from this country"}
+                                            {trackSource === "continent" && "🌍 Top songs from this continent"}
+                                            {trackSource === "global" && "🌐 Global top songs"}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div style={{ opacity: 0.7 }}>Click a country on the map</div>
+                            )}
                         </div>
                     </div>
                 </section>
