@@ -53,19 +53,19 @@ export default function MapClientWrapper() {
                 console.debug("/api/spotify/playlist ->", data);
 
             if (data && data.error) {
-            // API returned an error (likely missing env vars or token problem)
-            setError(data.error + (data.details ? `: ${data.details}` : ""));
-            // fallback to sample tracks so UI remains usable
-            setTracks(SAMPLE_TRACKS);
+                // API returned an error (likely missing env vars or token problem)
+                setError(data.error + (data.details ? `: ${data.details}` : ""));
+                // fallback to sample tracks so UI remains usable
+                setTracks(SAMPLE_TRACKS);
             } else {
-            setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+                setTracks(data.tracks && data.tracks.length ? data.tracks : []);
             }
         })
         .catch((err) => {
             console.error("Failed to fetch playlist", err);
             if (mounted) {
-            setError(String(err));
-            setTracks(SAMPLE_TRACKS);
+                setError(String(err));
+                setTracks(SAMPLE_TRACKS);
             }
         })
         .finally(() => {

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 // - Accepts optional `tracks` prop (array of track objects).
 // - If `tracks` is not provided, it falls back to a small sample list.
 // - Calls `onLike` / `onSkip` callbacks when a card is liked or skipped.
-export default function SwipeDeck({ tracks, onLike, onSkip }) {
+export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 	// If no tracks prop is provided, use a minimal local sample so the UI can be tested.
 	const sampleTracks = [
 		{
@@ -27,18 +27,9 @@ export default function SwipeDeck({ tracks, onLike, onSkip }) {
 		},
 	];
 
-			// Maintain the list of remaining cards in state so we can remove the top card on swipe.
-			// Initialize from `tracks` prop when available, otherwise fall back to sampleTracks.
-			const [cards, setCards] = useState(tracks && tracks.length ? tracks : sampleTracks);
-
-			// If the parent passes a new `tracks` array (for example, fetched from the Spotify API),
-			// replace the current cards with the provided list. This lets the deck update when
-			// `page.js` finishes its async fetch and supplies real playlist data.
-			useEffect(() => {
-				if (tracks && Array.isArray(tracks)) {
-					setCards(tracks);
-				}
-			}, [tracks]);
+		// Maintain the list of remaining cards in state so we can remove the top card on swipe.
+		// Initialize from `tracks` prop when available, otherwise fall back to sampleTracks.
+		const [cards, setCards] = useState(tracks && tracks.length ? tracks : sampleTracks);
 
 		// animating state: when a card is liked/skipped we animate it off-screen first,
 		// then remove it from the deck after the animation completes.
@@ -56,6 +47,12 @@ export default function SwipeDeck({ tracks, onLike, onSkip }) {
 
 		// keep a ref to the removal timeout so we can clear if the component unmounts
 		const timeoutRef = useRef(null);
+
+		useEffect(() => {
+			if (typeof deckEmpty === 'function') {
+				deckEmpty(!cards || cards.length === 0);
+			}
+		}, [cards]);
 
 		// handleAction: trigger animation and schedule removal + callback
 		const handleAction = useCallback(
