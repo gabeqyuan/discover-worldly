@@ -2,12 +2,14 @@
 import { useState } from "react";
 import MapRender from "./MapRender";
 import SwipeDeck from "./SwipeDeck";
+import PlaylistBuilder from "./PlaylistBuilder";
 
 export default function MapClientWrapper() {
     const [country, setCountry] = useState(null);
     const [isVoting, setIsVoting] = useState(false);
-    const likedSongs = [];
-    const dislikedSongs = [];
+    const [responseMsg, setResponseMsg] = useState([]);
+    const [likedSongs, setLikedSongs] = useState([]);
+    const [dislikedSongs, setDislikedSongs] = useState([]);
 
     // small sample track list to pass into the SwipeDeck for testing
     const sampleTracks = [
@@ -30,32 +32,43 @@ export default function MapClientWrapper() {
     return (
         <div>
             <div style={{ width: "100%", maxWidth: 1000, minHeight: 240 }}>
-                <MapRender onCountryChange={(c) => {
+                {/* <MapRender onCountryChange={(c) => {
                     setCountry(c);
                     setIsVoting(true);
-                }} />
+                }} /> */}
+                {!isVoting && (
+                    <PlaylistBuilder
+                        likedSongs={likedSongs}
+                        dislikedSongs={dislikedSongs}
+                        responseMsg={(e) => 
+                            setResponseMsg(e)
+                        }
+                    />
+                )}
             </div>
 
-            {isVoting && <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-                <div style={{ width: 380 }}>
-                <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
-                <SwipeDeck
-                    tracks={sampleTracks}
-                    onLike={(t) => {
-                        console.log("Liked", t);
-                        likedSongs.push(t);
-                    }}
-                    onSkip={(t) => {
-                        console.log("Skipped", t);
-                        dislikedSongs.push(t);
-                    }}
-                    deckEmpty={(c) => setIsVoting(!c)}
-                />
-                <div style={{ textAlign: "center", marginTop: 8 }}>
-                    {country ? <div>Selected country: {country.toUpperCase()}</div> : <div>No country selected</div>}
-                </div>
-                </div>
-            </section>}
+            {isVoting && (
+                <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                    <div style={{ width: 380 }}>
+                        <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
+                        <SwipeDeck
+                            tracks={sampleTracks}
+                            onLike={(t) => {
+                                console.log("Liked", t);
+                                setLikedSongs((prev) => [...prev, t]);
+                            }}
+                            onSkip={(t) => {
+                                console.log("Skipped", t);
+                                setDislikedSongs((prev) => [...prev, t]);
+                            }}
+                            deckEmpty={(c) => setIsVoting(!c)}
+                        />
+                        <div style={{ textAlign: "center", marginTop: 8 }}>
+                            {country ? <div>Selected country: {country.toUpperCase()}</div> : <div>No country selected</div>}
+                        </div>
+                    </div>
+                </section>
+            )}
         </div>
     );
 }
