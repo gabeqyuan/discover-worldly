@@ -3,6 +3,7 @@ import { useState } from "react";
 import MapRender from "./MapRender";
 import SwipeDeck from "./SwipeDeck";
 import PlaylistBuilder from "./PlaylistBuilder";
+import Loading from "./Loading";
 
 export default function MapClientWrapper() {
     const [country, setCountry] = useState(null);
@@ -31,21 +32,20 @@ export default function MapClientWrapper() {
 
     return (
         <div>
-            <div style={{ width: "100%", maxWidth: 1000, minHeight: 240 }}>
-                {/* <MapRender onCountryChange={(c) => {
-                    setCountry(c);
-                    setIsVoting(true);
-                }} /> */}
-                {!isVoting && (
-                    <PlaylistBuilder
-                        likedSongs={likedSongs}
-                        dislikedSongs={dislikedSongs}
-                        responseMsg={(e) => 
-                            setResponseMsg(e)
-                        }
-                    />
-                )}
-            </div>
+            <MapRender onCountryChange={(c) => {
+                setCountry(c);
+                setIsVoting(true);
+            }} />
+            {/* {!isVoting && (
+                <PlaylistBuilder
+                    likedSongs={likedSongs}
+                    dislikedSongs={dislikedSongs}
+                    responseMsg={(e) => 
+                        setResponseMsg(e)
+                    }
+                />
+            )} */}
+            <Loading />
 
             {isVoting && (
                 <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
