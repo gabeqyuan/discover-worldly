@@ -123,7 +123,7 @@ export default function MapClientWrapper() {
             )} */}
             {/* <Loading /> */}
 
-            {isVoting && (
+            {accessToken && isVoting && (
                 <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
