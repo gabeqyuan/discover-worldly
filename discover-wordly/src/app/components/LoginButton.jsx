@@ -8,24 +8,9 @@ export default function LoginButton({ onLogin }) {
 
     useEffect(() => {
         setIsClient(true);
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        
-        if (code) {
-            exchangeCodeForToken(code)
-                .then(data => {
-                    if (data && data.access_token) {
-                        localStorage.setItem('access_token', data.access_token);
-                        localStorage.setItem('refresh_token', data.refresh_token);
-                        onLogin(data.access_token);
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    } else {
-                        console.error('Token exchange failed', data);
-                    }
-                })
-                .catch(err => console.error('Failed to fetch token:', err));
-        }
-    }, [onLogin]);
+        // Note: Authorization code handling is now done in AuthContext
+        // to avoid duplicate code exchanges which cause invalid_grant errors
+    }, []);
 
     const handleLogin = () => {
         window.location.href = getAuthUrl();
