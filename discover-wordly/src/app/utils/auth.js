@@ -1,7 +1,12 @@
 const CLIENT_ID = '3fa215b2a90a4c0393c475ce82db39fc';
-const REDIRECT_URI = 'https://discover-worldly.vercel.app/';
+// Use dynamic redirect URI based on environment
+const REDIRECT_URI = typeof window !== 'undefined' 
+    ? window.location.origin + '/'
+    : 'https://discover-worldly.vercel.app/';
 
 export async function exchangeCodeForToken(code) {
+    console.log('Exchanging code for token with redirect URI:', REDIRECT_URI);
+    
     const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: {
@@ -18,7 +23,10 @@ export async function exchangeCodeForToken(code) {
     });
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Failed to exchange code');
+    if (!response.ok) {
+        console.error('Token exchange failed:', data);
+        throw new Error(data.error_description || data.error || 'Failed to exchange code');
+    }
     return data;
     }
 

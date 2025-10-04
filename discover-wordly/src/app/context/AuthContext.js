@@ -27,7 +27,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const handleAuthCallback = async (code) => {
+    // Prevent double processing of the same code
+    const processedCode = sessionStorage.getItem('processed_auth_code');
+    if (processedCode === code) {
+      console.log('Auth code already processed, skipping');
+      return;
+    }
+    
     try {
+      sessionStorage.setItem('processed_auth_code', code);
       const data = await exchangeCodeForToken(code);
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token);
@@ -36,9 +44,12 @@ export function AuthProvider({ children }) {
         fetchProfile(data.access_token);
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
+        // Clean up processed code tracker
+        sessionStorage.removeItem('processed_auth_code');
       }
     } catch (error) {
       console.error('Auth callback failed:', error);
+      sessionStorage.removeItem('processed_auth_code');
       handleLogout();
     }
   };
