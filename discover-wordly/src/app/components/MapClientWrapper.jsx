@@ -52,26 +52,25 @@ export default function MapClientWrapper() {
                 if (!mounted) return;
                 console.debug("/api/spotify/country-tracks ->", data);
 
-                if (data && data.error) {
-                    setError(data.error + (data.details ? `: ${data.details}` : ""));
-                    setTracks(SAMPLE_TRACKS);
-                    setTrackSource("error");
-                } else {
-                    setTracks(data.tracks && data.tracks.length ? data.tracks : []);
-                    setTrackSource(data.source); // "country", "continent", or "global"
-                }
-            })
-            .catch((err) => {
-                console.error("Failed to fetch country tracks", err);
-                if (mounted) {
-                    setError(String(err));
-                    setTracks(SAMPLE_TRACKS);
-                    setTrackSource("error");
-                }
-            })
-            .finally(() => {
-                if (mounted) setLoading(false);
-            });
+            if (data && data.error) {
+                // API returned an error (likely missing env vars or token problem)
+                setError(data.error + (data.details ? `: ${data.details}` : ""));
+                // fallback to sample tracks so UI remains usable
+                setTracks(SAMPLE_TRACKS);
+            } else {
+                setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+            }
+        })
+        .catch((err) => {
+            console.error("Failed to fetch playlist", err);
+            if (mounted) {
+                setError(String(err));
+                setTracks(SAMPLE_TRACKS);
+            }
+        })
+        .finally(() => {
+            if (mounted) setLoading(false);
+        });
 
         return () => {
             mounted = false;
@@ -124,7 +123,7 @@ export default function MapClientWrapper() {
             )} */}
             {/* <Loading /> */}
 
-            {isVoting && (
+            {accessToken && isVoting && (
                 <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
