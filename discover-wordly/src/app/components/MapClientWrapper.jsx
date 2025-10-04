@@ -49,6 +49,7 @@ export default function MapClientWrapper() {
                         console.log("Skipped", t);
                         dislikedSongs.push(t);
                     }}
+                    deckEmpty={(c) => setIsVoting(!c)}
                 />
                 <div style={{ textAlign: "center", marginTop: 8 }}>
                     {country ? <div>Selected country: {country.toUpperCase()}</div> : <div>No country selected</div>}

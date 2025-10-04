@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import SongCard from "./SongCard";
 
 // SwipeDeck: simple stack of SongCard components.
 // - Accepts optional `tracks` prop (array of track objects).
 // - If `tracks` is not provided, it falls back to a small sample list.
 // - Calls `onLike` / `onSkip` callbacks when a card is liked or skipped.
-export default function SwipeDeck({ tracks = null, onLike, onSkip }) {
+export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 	// If no tracks prop is provided, use a minimal local sample so the UI can be tested.
 	const sampleTracks = [
 		{
@@ -46,6 +46,14 @@ export default function SwipeDeck({ tracks = null, onLike, onSkip }) {
 		},
 		[onLike, onSkip]
 	);
+
+	// If there are no cards left, render an empty state message.
+	// Inform parent about empty/non-empty deck as a side-effect instead of during render.
+	useEffect(() => {
+		if (typeof deckEmpty === 'function') {
+			deckEmpty(!cards || cards.length === 0);
+		}
+	}, [cards]);
 
 	// If there are no cards left, render an empty state message.
 	if (!cards || cards.length === 0) {
