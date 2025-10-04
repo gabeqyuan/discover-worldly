@@ -112,10 +112,11 @@ const COUNTRY_TO_CONTINENT = {
   NC: "Oceania", PF: "Oceania", WS: "Oceania", TO: "Oceania",
 };
 
-// GET /api/spotify/country-tracks?countryCode=US
+// GET /api/spotify/country-tracks?countryCode=US&userToken=...
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const countryCode = searchParams.get("countryCode")?.toUpperCase();
+  const userToken = searchParams.get("userToken"); // Optional user access token
 
   if (!countryCode) {
     return NextResponse.json(
@@ -154,26 +155,31 @@ export async function GET(req) {
   }
 
   try {
-    // 🔑 Get access token (Client Credentials flow)
-    const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization:
-          "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
-      },
-      body: "grant_type=client_credentials",
-    });
+    let accessToken = userToken; // Try to use user token first
 
-    if (!tokenRes.ok) {
-      const text = await tokenRes.text();
-      return NextResponse.json(
-        { error: "token_error", status: tokenRes.status, details: text },
-        { status: 500 }
-      );
+    // If no user token provided, fall back to Client Credentials
+    if (!accessToken) {
+      const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization:
+            "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
+        },
+        body: "grant_type=client_credentials",
+      });
+
+      if (!tokenRes.ok) {
+        const text = await tokenRes.text();
+        return NextResponse.json(
+          { error: "token_error", status: tokenRes.status, details: text },
+          { status: 500 }
+        );
+      }
+
+      const tokenData = await tokenRes.json();
+      accessToken = tokenData.access_token;
     }
-
-    const { access_token: accessToken } = await tokenRes.json();
 
     // 🎵 Fetch playlist tracks
     const tracksRes = await fetch(
@@ -214,6 +220,7 @@ export async function GET(req) {
       source, // "country", "continent", or "global"
       playlistId,
       tracks: selectedTracks,
+      authType: userToken ? "user" : "client_credentials", // Which auth was used
     });
   } catch (error) {
     console.error("Error fetching country tracks:", error);
