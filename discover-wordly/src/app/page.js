@@ -1,6 +1,6 @@
 "use client";
 
-import SongCard from "./songcard";
+import SongCard from "./components/SongCard";
 import MapRender from "./components/MapRender";
 
 const sampleTrack = {
@@ -12,12 +12,16 @@ const sampleTrack = {
 
 export default function Home() {
   return (
-    <MapRender/>
-    <main style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 16 }}>Test SongCard</h1>
-      <SongCard
-        track={sampleTrack}
-        onLike={(t) => console.log("Liked", t)}
-        onSkip={(t) => console.log("Skipped", t)}
-      />
-    </main>
+    <>
+      <MapRender />
+      <main style={{ padding: 24 }}>
+        <h1 style={{ marginBottom: 16 }}>Test SongCard</h1>
+        <SongCard
+          track={sampleTrack}
+          onLike={(t) => console.log("Liked", t)}
+          onSkip={(t) => console.log("Skipped", t)}
+        />
+      </main>
+    </>
+  )
+}
