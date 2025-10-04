@@ -75,6 +75,7 @@ export default function SongCard({ track = {}, onLike, onSkip }) {
 	}
 
 	const rotation = Math.max(-20, Math.min(20, (translate.x / 20)));
+	const opacity = Math.abs(translate.x) > threshold ? Math.min(0.8, Math.abs(translate.x) / 300) : 0;
 
 	return (
 		<div
@@ -86,36 +87,142 @@ export default function SongCard({ track = {}, onLike, onSkip }) {
 			role="article"
 			aria-label={`${title} by ${artist}`}
 			style={{
-				width: 320,
+				width: 360,
 				maxWidth: "92vw",
-				height: 460,
-				borderRadius: 16,
-				boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
-				background: "#111",
+				height: 520,
+				borderRadius: 24,
+				boxShadow: isDragging 
+					? "0 20px 60px rgba(0,0,0,0.5)" 
+					: "0 12px 40px rgba(0,0,0,0.3)",
+				background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
 				color: "#fff",
 				overflow: "hidden",
 				userSelect: "none",
 				touchAction: "none",
 				position: "relative",
-				margin: "16px auto",
+				margin: "20px auto",
 				transform: `translate(${translate.x}px, ${translate.y}px) rotate(${rotation}deg)`,
-				transition: isDragging || released ? "transform 300ms ease-out" : "transform 200ms ease-in-out",
+				transition: isDragging ? "none" : released ? "transform 1000ms cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "transform 200ms ease-in-out, box-shadow 200ms ease",
 				display: "flex",
 				flexDirection: "column",
+				cursor: isDragging ? "grabbing" : "grab",
+				border: "1px solid rgba(255,255,255,0.08)",
 			}}
 		>
-			<div style={{ flex: 1, position: "relative" }}>
-						{albumArt && !imgError ? (
-							<img
-								src={albumArt}
-								alt={`${title} album art`}
-								onError={() => setImgError(true)}
-								style={{ width: "100%", height: "100%", objectFit: "cover" }}
-								loading="lazy"
-								decoding="async"
-								draggable={false}
-							/>
-						) : (
+			{/* Swipe direction indicators */}
+			<div
+				style={{
+					position: "absolute",
+					top: 40,
+					left: 40,
+					zIndex: 10,
+					opacity: translate.x < -threshold ? opacity : 0,
+					transition: "opacity 150ms ease",
+					transform: `rotate(-20deg) scale(${1 + opacity * 0.3})`,
+					pointerEvents: "none",
+				}}
+			>
+				<div style={{
+					background: "rgba(239, 68, 68, 0.9)",
+					color: "white",
+					padding: "12px 24px",
+					borderRadius: 12,
+					fontSize: 24,
+					fontWeight: 800,
+					border: "4px solid white",
+					boxShadow: "0 4px 12px rgba(239, 68, 68, 0.5)",
+				}}>
+					SKIP
+				</div>
+			</div>
+			
+			<div
+				style={{
+					position: "absolute",
+					top: 40,
+					right: 40,
+					zIndex: 10,
+					opacity: translate.x > threshold ? opacity : 0,
+					transition: "opacity 150ms ease",
+					transform: `rotate(20deg) scale(${1 + opacity * 0.3})`,
+					pointerEvents: "none",
+				}}
+			>
+				<div style={{
+					background: "rgba(29, 185, 84, 0.9)",
+					color: "white",
+					padding: "12px 24px",
+					borderRadius: 12,
+					fontSize: 24,
+					fontWeight: 800,
+					border: "4px solid white",
+					boxShadow: "0 4px 12px rgba(29, 185, 84, 0.5)",
+				}}>
+					LIKE
+				</div>
+			</div>
+
+			<div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+				{/* Red gradient overlay for skip (left swipe) */}
+				<div style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					right: 0,
+					bottom: 0,
+					background: "linear-gradient(90deg, rgba(239, 68, 68, 0.85) 0%, rgba(239, 68, 68, 0.4) 50%, transparent 100%)",
+					opacity: translate.x < 0 ? Math.min(Math.abs(translate.x) / 150, 1) : 0,
+					transition: isDragging ? "none" : "opacity 200ms ease",
+					pointerEvents: "none",
+					zIndex: 10,
+				}} />
+				
+				{/* Green gradient overlay for like (right swipe) */}
+				<div style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					right: 0,
+					bottom: 0,
+					background: "linear-gradient(270deg, rgba(29, 185, 84, 0.85) 0%, rgba(29, 185, 84, 0.4) 50%, transparent 100%)",
+					opacity: translate.x > 0 ? Math.min(translate.x / 150, 1) : 0,
+					transition: isDragging ? "none" : "opacity 200ms ease",
+					pointerEvents: "none",
+					zIndex: 10,
+				}} />
+				
+				{albumArt && !imgError ? (
+					<>
+						<img
+							src={albumArt}
+							alt={`${title} album art`}
+							onError={() => setImgError(true)}
+							style={{ 
+								width: "100%", 
+								height: "100%", 
+								objectFit: "cover",
+								filter: "brightness(0.85) contrast(1.1)",
+								position: "relative",
+								zIndex: 1,
+							}}
+							loading="lazy"
+							decoding="async"
+							draggable={false}
+						/>
+						
+						{/* Gradient overlay for better text visibility */}
+						<div style={{
+							position: "absolute",
+							bottom: 0,
+							left: 0,
+							right: 0,
+							height: "40%",
+							background: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)",
+							pointerEvents: "none",
+							zIndex: 5,
+						}} />
+					</>
+				) : (
 					<div
 						style={{
 							width: "100%",
@@ -123,74 +230,154 @@ export default function SongCard({ track = {}, onLike, onSkip }) {
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
-							background: "linear-gradient(135deg,#444,#222)",
+							background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
 						}}
 					>
-						<div style={{ textAlign: "center", padding: 16 }}>
+						<div style={{ textAlign: "center", padding: 24 }}>
+							<div style={{ 
+								fontSize: 28, 
+								fontWeight: 700,
+								marginBottom: 8,
+								textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+							}}>
+								🎵
+							</div>
 							<div style={{ fontSize: 18, fontWeight: 600 }}>{title}</div>
-							<div style={{ opacity: 0.8 }}>{artist}</div>
+							<div style={{ opacity: 0.9, marginTop: 4 }}>{artist}</div>
 						</div>
 					</div>
 				)}
 			</div>
 
-			<div style={{ padding: 12, background: "#070707" }}>
-				<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-					<div>
-						<div style={{ fontSize: 16, fontWeight: 700 }}>{title}</div>
-						<div style={{ fontSize: 13, opacity: 0.85 }}>{artist}</div>
+			<div style={{ 
+				padding: "20px 24px 24px", 
+				background: "linear-gradient(180deg, #0f0f0f, #000)",
+				borderTop: "1px solid rgba(255,255,255,0.05)",
+			}}>
+				<div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+					<div style={{ flex: 1, marginRight: 16 }}>
+						<div style={{ 
+							fontSize: 20, 
+							fontWeight: 700,
+							marginBottom: 4,
+							lineHeight: 1.3,
+							overflow: "hidden",
+							textOverflow: "ellipsis",
+							display: "-webkit-box",
+							WebkitLineClamp: 2,
+							WebkitBoxOrient: "vertical",
+						}}>
+							{title}
+						</div>
+						<div style={{ 
+							fontSize: 15, 
+							opacity: 0.7,
+							fontWeight: 500,
+						}}>
+							{artist}
+						</div>
 					</div>
-					<div style={{ display: "flex", gap: 8 }}>
+					<div style={{ display: "flex", gap: 10 }}>
 						<button
-							onClick={() => {
+							onClick={(e) => {
+								e.stopPropagation();
 								setTranslate({ x: -window.innerWidth, y: 0 });
 								setReleased(true);
-								if (typeof onSkip === "function") onSkip(track);
+								// Delay callback until after animation completes
+								setTimeout(() => {
+									if (typeof onSkip === "function") onSkip(track);
+								}, 1000);
 							}}
 							aria-label="Skip"
 							style={{
-								border: "none",
-								background: "#2b2b2b",
-								color: "#fff",
-								padding: "8px 10px",
-								borderRadius: 8,
+								border: "2px solid rgba(239, 68, 68, 0.3)",
+								background: "rgba(239, 68, 68, 0.1)",
+								color: "#ef4444",
+								padding: "10px 14px",
+								borderRadius: 50,
 								cursor: "pointer",
+								fontSize: 20,
+								transition: "all 150ms ease",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								width: 48,
+								height: 48,
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.background = "rgba(239, 68, 68, 0.2)";
+								e.currentTarget.style.transform = "scale(1.1)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
+								e.currentTarget.style.transform = "scale(1)";
 							}}
 						>
-							Skip
+							✕
 						</button>
 						<button
-							onClick={() => {
+							onClick={(e) => {
+								e.stopPropagation();
 								setTranslate({ x: window.innerWidth, y: 0 });
 								setReleased(true);
-								if (typeof onLike === "function") onLike(track);
+								// Delay callback until after animation completes
+								setTimeout(() => {
+									if (typeof onLike === "function") onLike(track);
+								}, 1000);
 							}}
 							aria-label="Like"
 							style={{
-								border: "none",
+								border: "2px solid rgba(29, 185, 84, 0.3)",
 								background: "#1db954",
-								color: "#072a10",
-								padding: "8px 12px",
-								borderRadius: 8,
+								color: "#fff",
+								padding: "10px 14px",
+								borderRadius: 50,
 								cursor: "pointer",
+								fontSize: 20,
 								fontWeight: 700,
+								transition: "all 150ms ease",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								width: 48,
+								height: 48,
+								boxShadow: "0 4px 12px rgba(29, 185, 84, 0.3)",
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.background = "#1ed760";
+								e.currentTarget.style.transform = "scale(1.1)";
+								e.currentTarget.style.boxShadow = "0 6px 16px rgba(29, 185, 84, 0.4)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.background = "#1db954";
+								e.currentTarget.style.transform = "scale(1)";
+								e.currentTarget.style.boxShadow = "0 4px 12px rgba(29, 185, 84, 0.3)";
 							}}
 						>
-							Like
+							♥
 						</button>
 					</div>
 				</div>
 
 				{spotifyId ? (
-					<div style={{ marginTop: 12 }}>
+					<div style={{ 
+						marginTop: 4,
+						background: "rgba(255,255,255,0.03)",
+						borderRadius: 12,
+						padding: 4,
+						border: "1px solid rgba(255,255,255,0.05)",
+					}}>
 						<iframe
 							title={`spotify-${spotifyId}`}
-							src={`https://open.spotify.com/embed/track/${spotifyId}`}
+							src={`https://open.spotify.com/embed/track/${spotifyId}?utm_source=generator&theme=0`}
 							width="100%"
 							height="80"
 							frameBorder="0"
 							allow="encrypted-media; clipboard-write; fullscreen; picture-in-picture"
-							style={{ borderRadius: 8 }}
+							style={{ 
+								borderRadius: 10,
+								background: "transparent",
+							}}
 						/>
 					</div>
 				) : null}
