@@ -85,26 +85,31 @@ export default function Home() {
       )}
 
       {accessToken && (
-        <div className="fixed top-6 right-6 z-50 flex flex-col items-end gap-3">
-          <div className="flex items-center gap-4 py-2.5 px-4 rounded-xl backdrop-blur-md bg-black/20 border border-white/10 shadow-lg hover:bg-black/30 transition-colors duration-200">
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
+          <div 
+            className="flex items-center gap-4 p-3 rounded-2xl backdrop-blur-md bg-white/5 border border-white/20 shadow-lg"
+            style={{
+              background: 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+            }}
+          >
             {profile && (
-              <>
+              <div className="flex items-center gap-4">
                 {profile.images?.[0] && (
                   <img 
                     src={profile.images[0].url} 
                     alt="Profile"
-                    className="w-8 h-8 rounded-full border border-white/30 shadow-lg"
+                    className="w-10 h-10 rounded-full border-2 border-white/30 shadow-lg"
                   />
                 )}
                 <div className="text-white">
-                  <div className="font-semibold text-sm">{profile.display_name || profile.id}</div>
-                  <div className="text-xs text-white/75">{profile.email}</div>
+                  <div className="font-semibold text-base">{profile.display_name || profile.id}</div>
+                  <div className="text-sm text-white/75">{profile.email}</div>
                 </div>
-              </>
+              </div>
             )}
           </div>
           
-          <div className="scale-90 origin-right">
+          <div className="scale-75 origin-right">
             <LogoutButton onLogout={() => { 
               setAccessToken(null);
               setProfile(null);
