@@ -1,6 +1,7 @@
 "use client";
 
 import SongCard from "./songcard";
+import MapRender from "./components/MapRender";
 
 const sampleTrack = {
   title: "Blinding Lights",
@@ -11,6 +12,7 @@ const sampleTrack = {
 
 export default function Home() {
   return (
+    <MapRender/>
     <main style={{ padding: 24 }}>
       <h1 style={{ marginBottom: 16 }}>Test SongCard</h1>
       <SongCard
@@ -19,5 +21,3 @@ export default function Home() {
         onSkip={(t) => console.log("Skipped", t)}
       />
     </main>
-  );
-}
