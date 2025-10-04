@@ -2,19 +2,71 @@
 
 import SongCard from "./components/SongCard";
 import MapRender from "./components/MapRender";
-import LogoutButton from "./components/LogoutButton";
-import LandingPage from "./components/LandingPage";
-import { useAuth } from "./context/AuthContext";
+import SwipeDeck from "./components/SwipeDeck";
+import { useEffect, useState } from "react";
 
-const sampleTrack = {
-  title: "Blinding Lights",
-  artist: "The Weeknd",
-  albumArt: "https://i.scdn.co/image/ab67616d0000b273d4f8e9b8d5a2e0f2b2c6d6d2",
-  spotifyId: "0VjIjW4GlUZAMYd2vXMi3b",
-};
+// Fallback sample tracks shown when the Spotify API is unavailable (local dev without env vars)
+const SAMPLE_TRACKS = [
+  {
+    id: "s1",
+    title: "Blinding Lights",
+    artist: "The Weeknd",
+    albumArt: "https://i.scdn.co/image/ab67616d0000b273d4f8e9b8d5a2e0f2b2c6d6d2",
+    spotifyId: "0VjIjW4GlUZAMYd2vXMi3b",
+  },
+  {
+    id: "s2",
+    title: "Levitating",
+    artist: "Dua Lipa",
+    albumArt: "https://i.scdn.co/image/ab67616d0000b273c7b7f2f9b4f3b8d9a2a4b5c6",
+    spotifyId: "463CkQjx2Zk1yXoBuierM9",
+  },
+];
+
+// We'll fetch the playlist from our Next API route and populate the deck.
+// Switched to a known-public playlist (Today's Top Hits) for testing so the deck populates.
+const DEFAULT_PLAYLIST = "37i9dQZF1DXcBWIGoYBM5M"; // Today's Top Hits
 
 export default function Home() {
-  const { accessToken, profile, setAccessToken, handleLogout } = useAuth();
+  const [tracks, setTracks] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    fetch(`/api/spotify/playlist?playlistId=${DEFAULT_PLAYLIST}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!mounted) return;
+        // log full response for debugging in dev
+        console.debug("/api/spotify/playlist ->", data);
+
+        if (data && data.error) {
+          // API returned an error (likely missing env vars or token problem)
+          setError(data.error + (data.details ? `: ${data.details}` : ""));
+          // fallback to sample tracks so UI remains usable
+          setTracks(SAMPLE_TRACKS);
+        } else {
+          setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch playlist", err);
+        if (mounted) {
+          setError(String(err));
+          setTracks(SAMPLE_TRACKS);
+        }
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <main className="min-h-screen relative overflow-hidden bg-black">
@@ -24,42 +76,34 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/60" />
       </div>
 
-      {!accessToken && <LandingPage />}
+      {/* Center the SwipeDeck below the map */}
+      <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <div style={{ width: 380 }}>
+          <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
 
-      {accessToken && (
-        <>
-          <div className="fixed top-6 right-6 z-50 flex flex-col items-end gap-3">
-            <div className="flex items-center gap-4 p-3 rounded-xl bg-white/10 border border-white/10 backdrop-blur-sm shadow-sm">
-              {profile && (
-                <>
-                  {profile.images?.[0] && (
-                    <img
-                      src={profile.images[0].url}
-                      alt="Profile"
-                      className="w-10 h-10 rounded-full border border-white/20"
-                    />
-                  )}
-                  <div className="text-white text-sm leading-tight">
-                    <div className="font-semibold">{profile.display_name || profile.id}</div>
-                    <div className="text-white/70">{profile.email}</div>
-                  </div>
-                </>
-              )}
+          {/* Visible error banner when the API returned an error (helps debug env / token issues) */}
+          {error ? (
+            <div style={{ marginBottom: 12, padding: 10, background: "#ffe6e6", color: "#800", borderRadius: 6 }}>
+              <strong>API error:</strong> {String(error)}
             </div>
-            <div className="scale-90 origin-right">
-              <LogoutButton onLogout={handleLogout} />
-            </div>
-          </div>
+          ) : null}
 
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20">
-            <SongCard
-              track={sampleTrack}
+          {/* Small badge showing how many tracks were loaded (useful to confirm API result) */}
+          {!loading && tracks ? (
+            <div style={{ marginBottom: 8, textAlign: "center", color: "#666" }}>Loaded tracks: {tracks.length}</div>
+          ) : null}
+
+          {loading ? (
+            <div style={{ textAlign: "center", color: "#888" }}>Loading tracks…</div>
+          ) : (
+            <SwipeDeck
+              tracks={tracks}
               onLike={(t) => console.log("Liked", t)}
               onSkip={(t) => console.log("Skipped", t)}
             />
-          </div>
-        </>
-      )}
+          )}
+        </div>
+      </section>
     </main>
   );
 }
