@@ -8,12 +8,13 @@ export default function MapRender({ onCountryChange }) {
     useEffect(() => {
         mapboxgl.accessToken = 'pk.eyJ1IjoicGZpc2giLCJhIjoiY21nY2N4dWE1MG1pbjJpcG03YjAxZXR3aiJ9.LgdHEWWRc36shcetIf4EGQ';
         const map = new mapboxgl.Map({
-            container: 'map', // container ID
+            container: 'map',
             style: 'mapbox://styles/pfish/cmgcfynxg00ec01qw6ji591zs',
-            center: [0,0], // starting position [lng, lat]
-            zoom: 2, // starting zoom
+            center: [0, 20], // Slightly north to account for controls
+            zoom: 2,
             maxZoom: 4,
             minZoom: 2,
+            padding: { top: 100, bottom: 100, left: 50, right: 50 },
         });
 
         mapRef.current = map;
@@ -41,6 +42,6 @@ export default function MapRender({ onCountryChange }) {
     }, []);
 
     return (
-        <div id="map" className="absolute inset-0"></div>
+        <div id="map" className="absolute inset-0 z-0"></div>
     )
 }
