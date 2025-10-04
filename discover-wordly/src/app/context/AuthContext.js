@@ -8,6 +8,7 @@ const AuthContext = createContext({});
 export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
     // Check for auth callback
@@ -50,6 +51,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error('Auth callback failed:', error);
       sessionStorage.removeItem('processed_auth_code');
+      setAuthError(error.message);
       handleLogout();
     }
   };
@@ -58,8 +60,10 @@ export function AuthProvider({ children }) {
     try {
       const data = await getSpotifyProfile(token);
       setProfile(data);
+      setAuthError(null); // Clear any previous errors
     } catch (error) {
       console.error('Failed to fetch profile:', error);
+      setAuthError(error.message);
       handleLogout();
     }
   };
@@ -69,6 +73,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('refresh_token');
     setAccessToken(null);
     setProfile(null);
+    setAuthError(null);
   };
 
   return (
@@ -76,6 +81,7 @@ export function AuthProvider({ children }) {
       value={{ 
         accessToken, 
         profile, 
+        authError,
         setAccessToken, 
         handleLogout 
       }}
