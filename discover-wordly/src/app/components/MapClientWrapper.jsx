@@ -6,8 +6,8 @@ import SwipeDeck from "./SwipeDeck";
 export default function MapClientWrapper() {
     const [country, setCountry] = useState(null);
     const [isVoting, setIsVoting] = useState(false);
-    const [likedSongs, setLikedSongs] = useState([]);
-    const [dislikedSongs, setDislikedSongs] = useState([]);
+    const likedSongs = [];
+    const dislikedSongs = [];
 
     // small sample track list to pass into the SwipeDeck for testing
     const sampleTracks = [
@@ -41,8 +41,14 @@ export default function MapClientWrapper() {
                 <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
                 <SwipeDeck
                     tracks={sampleTracks}
-                    onLike={(t) => console.log("Liked", t)}
-                    onSkip={(t) => console.log("Skipped", t)}
+                    onLike={(t) => {
+                        console.log("Liked", t);
+                        likedSongs.push(t);
+                    }}
+                    onSkip={(t) => {
+                        console.log("Skipped", t);
+                        dislikedSongs.push(t);
+                    }}
                 />
                 <div style={{ textAlign: "center", marginTop: 8 }}>
                     {country ? <div>Selected country: {country.toUpperCase()}</div> : <div>No country selected</div>}
