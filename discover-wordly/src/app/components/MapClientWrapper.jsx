@@ -1,11 +1,15 @@
 "use client"
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import MapRender from "./MapRender";
 import SwipeDeck from "./SwipeDeck";
 import PlaylistBuilder from "./PlaylistBuilder";
 import Loading from "./Loading";
+import LandingPage from "./LandingPage";
+import LogoutButton from "./LogoutButton";
 
 export default function MapClientWrapper() {
+    const { accessToken, profile, handleLogout } = useAuth();
     const [country, setCountry] = useState(null);
     const [isVoting, setIsVoting] = useState(false);
     const [responseMsg, setResponseMsg] = useState([]);
@@ -38,15 +42,15 @@ export default function MapClientWrapper() {
     const DEFAULT_PLAYLIST = "37i9dQZF1DXcBWIGoYBM5M"; // Today's Top Hits
 
     useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    setError(null);
-    fetch(`/api/spotify/playlist?playlistId=${DEFAULT_PLAYLIST}`)
-        .then((r) => r.json())
-        .then((data) => {
-            if (!mounted) return;
-            // log full response for debugging in dev
-            console.debug("/api/spotify/playlist ->", data);
+        let mounted = true;
+        setLoading(true);
+        setError(null);
+        fetch(`/api/spotify/playlist?playlistId=${DEFAULT_PLAYLIST}`)
+            .then((r) => r.json())
+            .then((data) => {
+                if (!mounted) return;
+                // log full response for debugging in dev
+                console.debug("/api/spotify/playlist ->", data);
 
             if (data && data.error) {
             // API returned an error (likely missing env vars or token problem)
@@ -69,16 +73,45 @@ export default function MapClientWrapper() {
         });
 
         return () => {
-        mounted = false;
+            mounted = false;
         };
     }, []);
 
     return (
         <div>
+            {/* Show LandingPage overlay if not authenticated */}
+            {!accessToken && <LandingPage />}
+            
+            {/* Show logout button when authenticated */}
+            {accessToken && (
+                <div style={{ 
+                    position: "absolute", 
+                    top: "20px", 
+                    right: "20px", 
+                    zIndex: 5,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px"
+                }}>
+                    {profile?.images?.[0]?.url && (
+                        <img 
+                            src={profile.images[0].url} 
+                            alt="Profile" 
+                            style={{ width: "32px", height: "32px", borderRadius: "50%" }}
+                        />
+                    )}
+                    <span style={{ color: "white", fontWeight: "500" }}>
+                        {profile?.display_name || 'User'}
+                    </span>
+                    <LogoutButton onLogout={handleLogout} />
+                </div>
+            )}
+
             <MapRender onCountryChange={(c) => {
                 setCountry(c);
                 setIsVoting(true);
             }} />
+            
             {/* {!isVoting && (
                 <PlaylistBuilder
                     likedSongs={likedSongs}
