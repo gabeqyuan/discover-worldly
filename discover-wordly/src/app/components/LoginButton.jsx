@@ -36,9 +36,9 @@ export default function LoginButton({ onLogin }) {
     return (
         <button
             onClick={handleLogin}
-            className="bg-green-500 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-        >
-            Log in with Spotify
+            className="bg-[#1DB954] hover:bg-[#1ed760] text-black font-montserrat font-semibold text-lg px-7 py-2.5 rounded-full shadow-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95"
+        > 
+            Continue with Spotify
         </button>
     );
 }

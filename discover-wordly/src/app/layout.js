@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 const montserrat = Montserrat({
-  weight: ['700'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-montserrat',
   subsets: ['latin']
 });
@@ -22,6 +22,8 @@ export const metadata = {
   description: "HackHarvard 2025 Project",
 };
 
+import { AuthProvider } from "./context/AuthContext";
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -29,7 +31,9 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
