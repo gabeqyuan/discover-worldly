@@ -1,41 +1,39 @@
-"use client"
 import mapboxgl from 'mapbox-gl'
 import { useEffect, useRef, useState } from 'react';
 
-export default function MapRender({ onMapClick } = {}) {
+export default function MapRender({ onCountryChange }) {
     const mapRef = useRef(null);
-    const [coords, setCoords] = useState(null); // { lng, lat }
 
     useEffect(() => {
         mapboxgl.accessToken = 'pk.eyJ1IjoicGZpc2giLCJhIjoiY21nY2N4dWE1MG1pbjJpcG03YjAxZXR3aiJ9.LgdHEWWRc36shcetIf4EGQ';
         const map = new mapboxgl.Map({
-            container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/standard',
-            config: {
-                basemap: {
-                    lightPreset: "dawn",
-                    colorMotorways: "#abc7eb",
-                }
-            },
-            center: [0,0], // starting position [lng, lat]
-            zoom: 2, // starting zoom
+            container: 'map',
+            style: 'mapbox://styles/pfish/cmgcfynxg00ec01qw6ji591zs',
+            center: [0, 20], // Slightly north to account for controls
+            zoom: 2,
             maxZoom: 4,
             minZoom: 2,
+            padding: { top: 100, bottom: 100, left: 50, right: 50 },
         });
 
         mapRef.current = map;
 
-        // Click handler to store coords and place/update a marker
-        const handleClick = (e) => {
-            // e.lngLat is a Mapbox LngLat object with lng and lat properties
+        // click handler to store coords
+        const handleClick = async (e) => {
             const lng = e.lngLat.lng;
             const lat = e.lngLat.lat;
-            setCoords({ lng, lat });
 
-            console.log(lng, lat);
-            // call optional callback
-            if (typeof onMapClick === 'function') {
-                try { onMapClick({ lng, lat }); } catch (err) { /* ignore callback errors */ }
+            try {
+                const response = await fetch(`https://api.mapbox.com/search/geocode/v6/reverse?longitude=${lng}&latitude=${lat}&access_token=pk.eyJ1IjoicGZpc2giLCJhIjoiY21nY2N4dWE1MG1pbjJpcG03YjAxZXR3aiJ9.LgdHEWWRc36shcetIf4EGQ`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch country');
+                }
+                const reverse_geocoding = await response.json();
+                const country = reverse_geocoding.features[reverse_geocoding.features.length - 1].properties.context.country.country_code;
+
+                if (typeof onCountryChange === 'function') onCountryChange(country);
+            } catch (error) {
+                console.error('Error fetching countries:', error);
             }
         };
 
@@ -43,6 +41,6 @@ export default function MapRender({ onMapClick } = {}) {
     }, []);
 
     return (
-        <div id="map" className="absolute inset-0"></div>
+        <div id="map" className="absolute inset-0 z-0"></div>
     )
 }

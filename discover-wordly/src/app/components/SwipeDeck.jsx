@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import SongCard from "./SongCard";
+import { motion, AnimatePresence } from "framer-motion";
 
 // SwipeDeck: simple stack of SongCard components.
 // - Accepts optional `tracks` prop (array of track objects).

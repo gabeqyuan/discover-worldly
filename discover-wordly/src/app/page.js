@@ -1,5 +1,6 @@
-"use client";
+'use client';
 
+import SongCard from "./components/SongCard";
 import MapRender from "./components/MapRender";
 import SwipeDeck from "./components/SwipeDeck";
 import { useEffect, useState } from "react";
@@ -68,20 +69,11 @@ export default function Home() {
   }, []);
 
   return (
-    // Single-column, centered layout. Content will be stacked vertically and centered.
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 16,
-        padding: "12px 24px",
-        justifyContent: "flex-start", // ensure content starts nearer the top
-      }}
-    >
-      {/* Map centered with a max width so it doesn't stretch too wide */}
-      <div style={{ width: "100%", maxWidth: 1000, minHeight: 240 }}>
+    <main className="min-h-screen relative overflow-hidden bg-black">
+      <div className="absolute inset-0 z-0 opacity-90">
         <MapRender />
+        {/* Brighter overlay for better globe visibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/60" />
       </div>
 
       {/* Center the SwipeDeck below the map */}
