@@ -134,37 +134,20 @@ export default function PlaylistBuilder({
   const canGenerate = likedSongs && likedSongs.length > 0;
 
   return (
-    <div className="playlist-builder" style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.75)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 1000,
-      padding: "20px",
-      backdropFilter: "blur(4px)"
-    }}>
-      {/* Generate Playlist Button - Hide when modal is open */}
-      {!showModal && (
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "16px",
-          padding: "32px",
-          background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
-          borderRadius: "24px",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          maxWidth: "500px",
-          width: "100%",
-          position: "relative",
-          color: "#fff"
-        }}>
+    <div className="playlist-builder">
+      {/* Generate Playlist Button */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "16px",
+        padding: "24px",
+        background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
+        borderRadius: "24px",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        color: "#fff"
+      }}>
         <div style={{ textAlign: "center" }}>
           <h3 style={{
             fontSize: "18px",
@@ -265,8 +248,7 @@ export default function PlaylistBuilder({
             Swipe right on songs you like to enable playlist generation
           </p>
         )}
-        </div>
-      )}
+      </div>
 
       {/* Playlist Modal */}
       <PlaylistModal
