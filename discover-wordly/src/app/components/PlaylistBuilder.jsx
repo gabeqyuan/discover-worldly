@@ -26,6 +26,13 @@ export default function PlaylistBuilder({
     setError(null);
 
     try {
+      console.log('[PLAYLIST-BUILDER] Starting playlist generation...', {
+        likedCount: likedSongs.length,
+        dislikedCount: dislikedSongs.length,
+        countryCode,
+        hasToken: !!userToken
+      });
+
       const response = await fetch('/api/generate-playlist', {
         method: 'POST',
         headers: {
@@ -40,16 +47,41 @@ export default function PlaylistBuilder({
       });
 
       const data = await response.json();
+      console.log('[PLAYLIST-BUILDER] API response:', { 
+        ok: response.ok, 
+        status: response.status, 
+        dataKeys: Object.keys(data) 
+      });
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate playlist');
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+        throw new Error(errorMsg || 'Failed to generate playlist');
       }
 
+      if (!data.recommendations || !Array.isArray(data.recommendations)) {
+        throw new Error('Invalid response format from AI service');
+      }
+
+      console.log('[PLAYLIST-BUILDER] Successfully generated', data.recommendations.length, 'recommendations');
       setRecommendations(data.recommendations);
       setShowModal(true);
     } catch (err) {
       console.error('Playlist generation error:', err);
-      setError(err.message || 'Failed to generate playlist. Please try again.');
+      
+      // Provide more user-friendly error messages
+      let userMessage = 'Failed to generate playlist. Please try again.';
+      
+      if (err.message.includes('GEMINI_API_KEY')) {
+        userMessage = 'AI service is not configured. Please contact support.';
+      } else if (err.message.includes('parse')) {
+        userMessage = 'AI service returned invalid data. Please try again.';
+      } else if (err.message.includes('network') || err.message.includes('fetch')) {
+        userMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message.length > 0) {
+        userMessage = err.message;
+      }
+      
+      setError(userMessage);
     } finally {
       setIsGenerating(false);
     }

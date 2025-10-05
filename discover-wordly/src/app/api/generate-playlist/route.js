@@ -2,10 +2,19 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req) {
+  console.log('[GENERATE-PLAYLIST] API called');
+  
   try {
     const { likedSongs, dislikedSongs, countryCode, userToken } = await req.json();
+    console.log('[GENERATE-PLAYLIST] Request data:', {
+      likedSongsCount: likedSongs?.length || 0,
+      dislikedSongsCount: dislikedSongs?.length || 0,
+      countryCode,
+      hasUserToken: !!userToken
+    });
 
     if (!likedSongs || likedSongs.length === 0) {
+      console.log('[GENERATE-PLAYLIST] Error: No liked songs provided');
       return NextResponse.json(
         { error: "No liked songs provided" },
         { status: 400 }
@@ -13,18 +22,25 @@ export async function POST(req) {
     }
 
     if (!process.env.GEMINI_API_KEY) {
+      console.log('[GENERATE-PLAYLIST] Error: Missing GEMINI_API_KEY');
       return NextResponse.json(
         { error: "Missing GEMINI_API_KEY" },
         { status: 500 }
       );
     }
 
+    console.log('[GENERATE-PLAYLIST] Initializing Gemini AI...');
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Format songs for better analysis
     const likedSongsList = likedSongs.map(song => `"${song.title}" by ${song.artist}`).join('\n');
-    const dislikedSongsList = dislikedSongs.length > 0 ? dislikedSongs.map(song => `"${song.title}" by ${song.artist}`).join('\n') : 'None';
+    const dislikedSongsList = dislikedSongs && dislikedSongs.length > 0 ? dislikedSongs.map(song => `"${song.title}" by ${song.artist}`).join('\n') : 'None';
+
+    console.log('[GENERATE-PLAYLIST] Formatted songs:', {
+      likedSongs: likedSongsList.substring(0, 200) + '...',
+      dislikedSongs: dislikedSongsList.substring(0, 100) + '...'
+    });
 
     const prompt = `Based on the user's music preferences, generate a curated playlist of 15 songs.
 
@@ -54,28 +70,59 @@ Return ONLY a valid JSON array of objects with this exact structure:
 
 Do not include any other text, explanations, or formatting outside the JSON array.`;
 
+    console.log('[GENERATE-PLAYLIST] Calling Gemini API...');
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
+    
+    console.log('[GENERATE-PLAYLIST] Gemini response received:', {
+      textLength: text.length,
+      textPreview: text.substring(0, 200) + '...'
+    });
     
     // Parse the JSON response
     let recommendations;
     try {
       // Clean the response text in case there are markdown code blocks
       const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      console.log('[GENERATE-PLAYLIST] Cleaned response:', cleanText.substring(0, 300) + '...');
+      
       recommendations = JSON.parse(cleanText);
+      console.log('[GENERATE-PLAYLIST] Successfully parsed recommendations:', recommendations.length, 'songs');
+      
+      // Validate the structure
+      if (!Array.isArray(recommendations)) {
+        throw new Error('Response is not an array');
+      }
+      
+      // Ensure each recommendation has required fields
+      recommendations = recommendations.map((rec, index) => ({
+        title: rec.title || `Unknown Song ${index + 1}`,
+        artist: rec.artist || 'Unknown Artist',
+        reason: rec.reason || 'AI recommendation'
+      }));
+      
     } catch (parseError) {
-      console.error('Failed to parse Gemini response:', text);
+      console.error('[GENERATE-PLAYLIST] Failed to parse Gemini response:', {
+        error: parseError.message,
+        responseText: text.substring(0, 500)
+      });
       return NextResponse.json(
-        { error: "Failed to parse AI response", details: parseError.message },
+        { 
+          error: "Failed to parse AI response", 
+          details: parseError.message,
+          rawResponse: text.substring(0, 200) + '...'
+        },
         { status: 500 }
       );
     }
 
+    console.log('[GENERATE-PLAYLIST] Starting Spotify enrichment...');
     // If we have Spotify access, try to enrich with Spotify data
     if (userToken) {
       try {
         const enrichedRecommendations = await enrichWithSpotifyData(recommendations, userToken, countryCode);
+        console.log('[GENERATE-PLAYLIST] Spotify enrichment successful');
         return NextResponse.json({ 
           recommendations: enrichedRecommendations,
           source: 'ai_with_spotify',
@@ -83,11 +130,12 @@ Do not include any other text, explanations, or formatting outside the JSON arra
           totalSongs: enrichedRecommendations.length
         });
       } catch (spotifyError) {
-        console.warn('Failed to enrich with Spotify data:', spotifyError);
+        console.warn('[GENERATE-PLAYLIST] Failed to enrich with Spotify data:', spotifyError.message);
         // Fall back to AI recommendations without Spotify data
       }
     }
     
+    console.log('[GENERATE-PLAYLIST] Returning AI-only recommendations');
     return NextResponse.json({ 
       recommendations,
       source: 'ai_only',
@@ -95,9 +143,17 @@ Do not include any other text, explanations, or formatting outside the JSON arra
       totalSongs: recommendations.length
     });
   } catch (error) {
-    console.error('Error generating playlist:', error);
+    console.error('[GENERATE-PLAYLIST] Error generating playlist:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return NextResponse.json(
-      { error: "Failed to generate playlist recommendations", details: error.message },
+      { 
+        error: "Failed to generate playlist recommendations", 
+        details: error.message,
+        errorType: error.name || 'Unknown'
+      },
       { status: 500 }
     );
   }
@@ -105,9 +161,14 @@ Do not include any other text, explanations, or formatting outside the JSON arra
 
 // Helper function to enrich AI recommendations with Spotify data
 async function enrichWithSpotifyData(recommendations, userToken, countryCode) {
+  console.log('[SPOTIFY-ENRICH] Starting enrichment for', recommendations.length, 'tracks');
   const enriched = [];
+  let foundCount = 0;
   
-  for (const rec of recommendations) {
+  for (let i = 0; i < recommendations.length; i++) {
+    const rec = recommendations[i];
+    console.log(`[SPOTIFY-ENRICH] Processing ${i + 1}/${recommendations.length}: "${rec.title}" by ${rec.artist}`);
+    
     try {
       // Search for this song on Spotify
       const searchQuery = encodeURIComponent(`${rec.title} ${rec.artist}`);
@@ -121,6 +182,7 @@ async function enrichWithSpotifyData(recommendations, userToken, countryCode) {
         const track = searchData.tracks?.items?.[0];
         
         if (track) {
+          console.log(`[SPOTIFY-ENRICH] ✓ Found: "${track.name}" by ${track.artists[0]?.name}`);
           enriched.push({
             ...rec,
             spotifyId: track.id,
@@ -128,16 +190,22 @@ async function enrichWithSpotifyData(recommendations, userToken, countryCode) {
             previewUrl: track.preview_url,
             externalUrl: track.external_urls?.spotify
           });
+          foundCount++;
           continue;
+        } else {
+          console.log(`[SPOTIFY-ENRICH] ✗ Not found on Spotify`);
         }
+      } else {
+        console.log(`[SPOTIFY-ENRICH] ✗ Search failed with status:`, searchRes.status);
       }
     } catch (err) {
-      console.warn(`Failed to find Spotify data for "${rec.title}" by ${rec.artist}`);
+      console.warn(`[SPOTIFY-ENRICH] ✗ Error searching for "${rec.title}" by ${rec.artist}:`, err.message);
     }
     
     // If Spotify search failed, keep the AI recommendation without Spotify data
     enriched.push(rec);
   }
   
+  console.log(`[SPOTIFY-ENRICH] Enrichment complete: ${foundCount}/${recommendations.length} tracks found on Spotify`);
   return enriched;
 }
