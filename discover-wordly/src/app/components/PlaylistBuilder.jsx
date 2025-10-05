@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import PlaylistModal from "./PlaylistModal";
 
 export default function PlaylistBuilder({ 
   likedSongs = [], 
@@ -12,14 +11,16 @@ export default function PlaylistBuilder({
   onBackToMap
 }) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [recommendations, setRecommendations] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
   const [error, setError] = useState(null);
 
   const generatePlaylist = async () => {
     if (!likedSongs || likedSongs.length === 0) {
       setError("You need to like at least one song to generate a playlist!");
+      return;
+    }
+
+    if (!userToken) {
+      setError("You need to be logged in to create a playlist");
       return;
     }
 
@@ -34,6 +35,7 @@ export default function PlaylistBuilder({
         hasToken: !!userToken
       });
 
+      // Step 1: Generate AI recommendations
       const response = await fetch('/api/generate-playlist', {
         method: 'POST',
         headers: {
@@ -48,7 +50,7 @@ export default function PlaylistBuilder({
       });
 
       const data = await response.json();
-      console.log('[PLAYLIST-BUILDER] API response:', { 
+      console.log('[PLAYLIST-BUILDER] AI generation response:', { 
         ok: response.ok, 
         status: response.status, 
         dataKeys: Object.keys(data) 
@@ -64,15 +66,59 @@ export default function PlaylistBuilder({
       }
 
       console.log('[PLAYLIST-BUILDER] Successfully generated', data.recommendations.length, 'recommendations');
-      setRecommendations(data.recommendations);
-      console.log('[PLAYLIST-BUILDER] Setting showModal to true');
-      setShowModal(true);
-      console.log('[PLAYLIST-BUILDER] showModal state should now be:', true);
+      
+      // Step 2: Create playlist directly with default name
+      const playlistName = `Discover ${countryCode || 'Music'}`;
+      const playlistDescription = `A personalized playlist created by Discover Worldly based on your music preferences • Generated ${new Date().toLocaleDateString()}`;
+      
+      console.log('[PLAYLIST-BUILDER] Creating playlist with name:', playlistName);
+      console.log('[PLAYLIST-BUILDER] Tracks to add:', data.recommendations.filter(t => t.spotifyId).length, 'of', data.recommendations.length);
+      
+      const createResponse = await fetch('/api/spotify/create-playlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: playlistName,
+          description: playlistDescription,
+          tracks: data.recommendations,
+          userToken
+        }),
+      });
+
+      console.log('[PLAYLIST-BUILDER] Playlist creation response status:', createResponse.status);
+      const playlistData = await createResponse.json();
+      console.log('[PLAYLIST-BUILDER] Playlist creation response data:', playlistData);
+
+      if (!createResponse.ok) {
+        console.error('[PLAYLIST-BUILDER] Playlist creation failed:', playlistData);
+        throw new Error(playlistData.error || 'Failed to create playlist');
+      }
+
+      // Success!
+      console.log('[PLAYLIST-BUILDER] Playlist created successfully:', playlistData.playlist);
+      
+      if (onPlaylistCreated) {
+        onPlaylistCreated(playlistData.playlist);
+      }
+
+      // Show success message with details
+      const successMessage = `🎉 Playlist "${playlistData.playlist.name}" created successfully!\n\n` +
+        `📊 ${playlistData.playlist.tracksAdded} of ${playlistData.playlist.totalTracks} songs were added to your Spotify library.\n\n` +
+        `🎵 Open Spotify to listen to your new playlist!`;
+      
+      alert(successMessage);
+      
+      // Optionally go back to map after success
+      if (onBackToMap) {
+        setTimeout(() => onBackToMap(), 2000);
+      }
     } catch (err) {
-      console.error('Playlist generation error:', err);
+      console.error('[PLAYLIST-BUILDER] Error during playlist generation/creation:', err);
       
       // Provide more user-friendly error messages
-      let userMessage = 'Failed to generate playlist. Please try again.';
+      let userMessage = 'Failed to create playlist. Please try again.';
       
       if (err.message.includes('GEMINI_API_KEY')) {
         userMessage = 'AI service is not configured. Please contact support.';
@@ -80,6 +126,8 @@ export default function PlaylistBuilder({
         userMessage = 'AI service returned invalid data. Please try again.';
       } else if (err.message.includes('network') || err.message.includes('fetch')) {
         userMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message.includes('token')) {
+        userMessage = 'Authentication failed. Please try logging in again.';
       } else if (err.message.length > 0) {
         userMessage = err.message;
       }
@@ -90,62 +138,9 @@ export default function PlaylistBuilder({
     }
   };
 
-  const handleCreatePlaylist = async (playlistData) => {
-    console.log('[PLAYLIST-BUILDER] Creating playlist with data:', playlistData);
-    console.log('[PLAYLIST-BUILDER] UserToken exists:', !!userToken);
-    
-    if (!userToken) {
-      console.error('[PLAYLIST-BUILDER] No user token available');
-      setError("You need to be logged in to create a playlist");
-      return;
-    }
-
-    setIsCreatingPlaylist(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/spotify/create-playlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...playlistData,
-          userToken
-        }),
-      });
-
-      console.log('[PLAYLIST-BUILDER] API Response status:', response.status);
-      const data = await response.json();
-      console.log('[PLAYLIST-BUILDER] API Response data:', data);
-
-      if (!response.ok) {
-        console.error('[PLAYLIST-BUILDER] API Error:', data);
-        throw new Error(data.error || 'Failed to create playlist');
-      }
-
-      // Success! Close modal and notify parent
-      console.log('[PLAYLIST-BUILDER] Playlist created successfully:', data.playlist);
-      setShowModal(false);
-      if (onPlaylistCreated) {
-        onPlaylistCreated(data.playlist);
-      }
-
-      // Show success message
-      alert(`Playlist "${data.playlist.name}" created successfully! ${data.playlist.tracksAdded} tracks were added to your Spotify library.`);
-
-    } catch (err) {
-      console.error('[PLAYLIST-BUILDER] Playlist creation error:', err);
-      setError(err.message || 'Failed to create playlist. Please try again.');
-    } finally {
-      setIsCreatingPlaylist(false);
-    }
-  };
-
   const canGenerate = likedSongs && likedSongs.length > 0;
 
   return (
-    <>
     <div 
       className="playlist-builder-backdrop"
       style={{
@@ -154,13 +149,12 @@ export default function PlaylistBuilder({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: showModal ? "transparent" : "rgba(0, 0, 0, 0.3)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         zIndex: 1000,
-        padding: "20px",
-        pointerEvents: showModal ? "none" : "auto"
+        padding: "20px"
       }}
       onClick={onBackToMap}
     >
@@ -252,31 +246,31 @@ export default function PlaylistBuilder({
 
         <button
           onClick={generatePlaylist}
-          disabled={!canGenerate || isGenerating}
+          disabled={!canGenerate || isGenerating || !userToken}
           style={{
             padding: "14px 28px",
-            backgroundColor: (!canGenerate || isGenerating) ? "#9ca3af" : "#059669",
+            backgroundColor: (!canGenerate || isGenerating || !userToken) ? "#9ca3af" : "#059669",
             color: "white",
             borderRadius: "12px",
             fontWeight: "600",
             border: "none",
-            cursor: (!canGenerate || isGenerating) ? "not-allowed" : "pointer",
+            cursor: (!canGenerate || isGenerating || !userToken) ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             gap: "10px",
             fontSize: "16px",
-            boxShadow: (!canGenerate || isGenerating) ? "none" : "0 6px 20px rgba(5, 150, 105, 0.4)",
+            boxShadow: (!canGenerate || isGenerating || !userToken) ? "none" : "0 6px 20px rgba(5, 150, 105, 0.4)",
             transition: "all 0.2s ease"
           }}
           onMouseEnter={(e) => {
-            if (canGenerate && !isGenerating) {
+            if (canGenerate && !isGenerating && userToken) {
               e.target.style.backgroundColor = "#047857";
               e.target.style.transform = "translateY(-2px) scale(1.02)";
               e.target.style.boxShadow = "0 8px 25px rgba(5, 150, 105, 0.5)";
             }
           }}
           onMouseLeave={(e) => {
-            if (canGenerate && !isGenerating) {
+            if (canGenerate && !isGenerating && userToken) {
               e.target.style.backgroundColor = "#059669";
               e.target.style.transform = "translateY(0px) scale(1)";
               e.target.style.boxShadow = "0 6px 20px rgba(5, 150, 105, 0.4)";
@@ -293,12 +287,12 @@ export default function PlaylistBuilder({
                 borderRadius: "50%",
                 animation: "spin 1s linear infinite"
               }}></div>
-              <span>Generating with AI...</span>
+              <span>Creating Playlist...</span>
             </>
           ) : (
             <>
               <span>🎵</span>
-              <span>Generate AI Playlist</span>
+              <span>Create Spotify Playlist</span>
             </>
           )}
         </button>
@@ -310,25 +304,22 @@ export default function PlaylistBuilder({
             textAlign: "center",
             margin: 0
           }}>
-            Swipe right on songs you like to enable playlist generation
+            Swipe right on songs you like to create a playlist
+          </p>
+        )}
+        
+        {!userToken && (
+          <p style={{
+            fontSize: "12px",
+            color: "rgba(255,255,255,0.5)",
+            textAlign: "center",
+            margin: 0
+          }}>
+            Please log in to create playlists on Spotify
           </p>
         )}
       </div>
 
     </div>
-    
-    {/* Render modal outside the backdrop */}
-    <PlaylistModal
-      isOpen={showModal}
-      onClose={() => {
-        console.log('[PLAYLIST-BUILDER] Closing modal');
-        setShowModal(false);
-      }}
-      recommendations={recommendations}
-      onCreatePlaylist={handleCreatePlaylist}
-      isCreating={isCreatingPlaylist}
-      countryCode={countryCode}
-    />
-  </>
   );
 }
