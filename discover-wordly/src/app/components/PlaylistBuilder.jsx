@@ -1,6 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+// Add animations if not already present
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('playlist-builder-animations');
+  if (!existingStyle) {
+    const style = document.createElement('style');
+    style.id = 'playlist-builder-animations';
+    style.textContent = `
+      @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
 
 export default function PlaylistBuilder({ 
   likedSongs = [], 
@@ -167,61 +191,79 @@ export default function PlaylistBuilder({
         alignItems: "center",
         gap: "16px",
         padding: "24px",
-        background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
-        borderRadius: "24px",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "linear-gradient(145deg, #1e1e1e 0%, #0d1117 50%, #000000 100%)",
+        borderRadius: "32px",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
+        border: "1px solid rgba(96, 165, 250, 0.2)",
         color: "#fff",
-        maxWidth: "500px",
+        maxWidth: "520px",
         width: "100%",
-        position: "relative"
+        position: "relative",
+        backdropFilter: "blur(20px)",
+        transform: "translateY(0px)",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       }}>
         {/* Back to Map button */}
         <button
           onClick={onBackToMap}
           style={{
             position: "absolute",
-            top: "16px",
-            right: "16px",
-            background: "rgba(255,255,255,0.1)",
-            color: "rgba(255,255,255,0.7)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "12px",
-            padding: "6px 12px",
-            fontSize: "12px",
-            fontWeight: "500",
+            top: "20px",
+            right: "20px",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+            color: "rgba(255,255,255,0.8)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "50%",
+            padding: "8px",
+            fontSize: "16px",
+            fontWeight: "400",
             cursor: "pointer",
-            transition: "all 0.2s ease",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             display: "flex",
             alignItems: "center",
-            gap: "4px"
+            justifyContent: "center",
+            width: "36px",
+            height: "36px",
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
           }}
           onMouseEnter={(e) => {
-            e.target.style.background = "rgba(255,255,255,0.15)";
+            e.target.style.background = "linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.9))";
             e.target.style.color = "#fff";
+            e.target.style.transform = "scale(1.1) rotate(90deg)";
+            e.target.style.boxShadow = "0 6px 20px rgba(239, 68, 68, 0.4)";
           }}
           onMouseLeave={(e) => {
-            e.target.style.background = "rgba(255,255,255,0.1)";
-            e.target.style.color = "rgba(255,255,255,0.7)";
+            e.target.style.background = "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))";
+            e.target.style.color = "rgba(255,255,255,0.8)";
+            e.target.style.transform = "scale(1) rotate(0deg)";
+            e.target.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
           }}
         >
           ×
         </button>
         <div style={{ textAlign: "center" }}>
           <h3 style={{
-            fontSize: "18px",
-            fontWeight: "600",
+            fontSize: "24px",
+            fontWeight: "700",
             color: "#fff",
-            marginBottom: "8px",
-            margin: "0 0 8px 0"
+            marginBottom: "12px",
+            margin: "0 0 12px 0",
+            background: "linear-gradient(135deg, #60a5fa, #3b82f6, #1d4ed8)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            textAlign: "center",
+            letterSpacing: "-0.02em"
           }}>
-            Create Your Personalized Playlist
+            🎵 Create Your Personalized Playlist
           </h3>
           <p style={{
-            fontSize: "14px",
-            color: "rgba(255,255,255,0.7)",
-            marginBottom: "16px",
-            margin: "0 0 16px 0"
+            fontSize: "15px",
+            color: "rgba(255,255,255,0.8)",
+            marginBottom: "20px",
+            margin: "0 0 20px 0",
+            lineHeight: "1.5",
+            textAlign: "center"
           }}>
             {likedSongs.length > 0 
               ? `Based on ${likedSongs.length} liked song${likedSongs.length === 1 ? '' : 's'}${dislikedSongs.length > 0 ? ` and ${dislikedSongs.length} disliked` : ''}`
@@ -233,14 +275,19 @@ export default function PlaylistBuilder({
         {error && (
           <div style={{
             width: "100%",
-            padding: "12px",
-            backgroundColor: "rgba(239, 68, 68, 0.1)",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
-            color: "#fca5a5",
-            borderRadius: "10px",
-            fontSize: "14px"
+            padding: "16px 20px",
+            background: "linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1))",
+            border: "1px solid rgba(239, 68, 68, 0.4)",
+            color: "#fecaca",
+            borderRadius: "16px",
+            fontSize: "14px",
+            fontWeight: "500",
+            textAlign: "center",
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)",
+            animation: "fadeIn 0.3s ease-out"
           }}>
-            {error}
+            ⚠️ {error}
           </div>
         )}
 
@@ -248,32 +295,42 @@ export default function PlaylistBuilder({
           onClick={generatePlaylist}
           disabled={!canGenerate || isGenerating || !userToken}
           style={{
-            padding: "14px 28px",
-            backgroundColor: (!canGenerate || isGenerating || !userToken) ? "#9ca3af" : "#059669",
+            padding: "18px 36px",
+            background: (!canGenerate || isGenerating || !userToken) 
+              ? "linear-gradient(135deg, #6b7280, #4b5563)" 
+              : "linear-gradient(135deg, #10b981, #059669, #047857)",
             color: "white",
-            borderRadius: "12px",
-            fontWeight: "600",
-            border: "none",
+            borderRadius: "20px",
+            fontWeight: "700",
+            fontSize: "17px",
+            border: "1px solid rgba(255,255,255,0.1)",
             cursor: (!canGenerate || isGenerating || !userToken) ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
-            gap: "10px",
-            fontSize: "16px",
-            boxShadow: (!canGenerate || isGenerating || !userToken) ? "none" : "0 6px 20px rgba(5, 150, 105, 0.4)",
-            transition: "all 0.2s ease"
+            justifyContent: "center",
+            gap: "12px",
+            boxShadow: (!canGenerate || isGenerating || !userToken) 
+              ? "0 4px 12px rgba(0,0,0,0.2)" 
+              : "0 8px 32px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            position: "relative",
+            overflow: "hidden",
+            backdropFilter: "blur(10px)",
+            letterSpacing: "0.02em",
+            textShadow: "0 1px 2px rgba(0,0,0,0.3)"
           }}
           onMouseEnter={(e) => {
             if (canGenerate && !isGenerating && userToken) {
-              e.target.style.backgroundColor = "#047857";
-              e.target.style.transform = "translateY(-2px) scale(1.02)";
-              e.target.style.boxShadow = "0 8px 25px rgba(5, 150, 105, 0.5)";
+              e.target.style.background = "linear-gradient(135deg, #059669, #047857, #065f46)";
+              e.target.style.transform = "translateY(-4px) scale(1.05)";
+              e.target.style.boxShadow = "0 12px 40px rgba(16, 185, 129, 0.6), 0 0 0 1px rgba(255,255,255,0.2), inset 0 1px 0 rgba(255,255,255,0.3)";
             }
           }}
           onMouseLeave={(e) => {
             if (canGenerate && !isGenerating && userToken) {
-              e.target.style.backgroundColor = "#059669";
+              e.target.style.background = "linear-gradient(135deg, #10b981, #059669, #047857)";
               e.target.style.transform = "translateY(0px) scale(1)";
-              e.target.style.boxShadow = "0 6px 20px rgba(5, 150, 105, 0.4)";
+              e.target.style.boxShadow = "0 8px 32px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.2)";
             }
           }}
         >
@@ -299,23 +356,35 @@ export default function PlaylistBuilder({
 
         {!canGenerate && (
           <p style={{
-            fontSize: "12px",
-            color: "rgba(255,255,255,0.5)",
+            fontSize: "13px",
+            color: "rgba(255,255,255,0.6)",
             textAlign: "center",
-            margin: 0
+            margin: 0,
+            fontWeight: "500",
+            background: "linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(59, 130, 246, 0.05))",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            border: "1px solid rgba(96, 165, 250, 0.2)",
+            backdropFilter: "blur(5px)"
           }}>
-            Swipe right on songs you like to create a playlist
+            👆 Swipe right on songs you like to create a playlist
           </p>
         )}
         
         {!userToken && (
           <p style={{
-            fontSize: "12px",
-            color: "rgba(255,255,255,0.5)",
+            fontSize: "13px",
+            color: "rgba(255,255,255,0.6)",
             textAlign: "center",
-            margin: 0
+            margin: 0,
+            fontWeight: "500",
+            background: "linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05))",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            border: "1px solid rgba(251, 191, 36, 0.2)",
+            backdropFilter: "blur(5px)"
           }}>
-            Please log in to create playlists on Spotify
+            🔑 Please log in to create playlists on Spotify
           </p>
         )}
       </div>

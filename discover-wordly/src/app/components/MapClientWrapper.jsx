@@ -95,9 +95,9 @@ export default function MapClientWrapper() {
                         {profile?.display_name || 'User'}
                     </span>
                     <LogoutButton onLogout={() => {
-                        handleLogout;
+                        handleLogout();
                         console.log("logging out");
-                        isVoting(false);
+                        setIsVoting(false);
                         setResponseMsg("");
                         setDislikedSongs([]);
                         setLikedSongs([]);
