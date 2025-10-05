@@ -119,7 +119,7 @@ export default function MapClientWrapper() {
 
             {accessToken && isVoting && country (
             // {isVoting && country && (
-                <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                <section style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck
                             tracks={tracks || SAMPLE_TRACKS}
