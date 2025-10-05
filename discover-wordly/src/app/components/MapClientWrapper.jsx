@@ -7,7 +7,6 @@ import PlaylistBuilder from "./PlaylistBuilder";
 import Loading from "./Loading";
 import LandingPage from "./LandingPage";
 import LogoutButton from "./LogoutButton";
-import PlaylistBuilder from "./PlaylistBuilder";
 
 export default function MapClientWrapper() {
     const { accessToken, profile, handleLogout } = useAuth();
