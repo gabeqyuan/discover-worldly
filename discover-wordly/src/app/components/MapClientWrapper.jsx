@@ -131,14 +131,14 @@ export default function MapClientWrapper() {
                 </section>
             )}
 
-            {isLoading && (
-                <Loading/>
-            )}
-
             <MapRender onCountryChange={(c) => {
                 setCountry(c);
                 setIsVoting(true);
             }} />
+
+            {isLoading && (
+                <Loading/>
+            )}
         </div>
     );
 }
