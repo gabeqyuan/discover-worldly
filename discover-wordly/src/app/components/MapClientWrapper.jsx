@@ -44,35 +44,38 @@ export default function MapClientWrapper() {
         let mounted = true;
         
         // Build URL with optional user token for better access
-        let url = `/api/spotify/country-tracks?countryCode=${country}`;
+        let url = `http://localhost:3000/api/spotify/country-tracks?countryCode=${country}`;
         if (accessToken) {
-            url += `&userToken=${encodeURIComponent(accessToken)}`;
+            url += `?&userToken=${encodeURIComponent(accessToken)}`;
+        } else {
+            url += `?&userToken=${null}`;
         }
-        
-        fetch(url)
-            .then((r) => r.json())
-            .then((data) => {
-                if (!mounted) return;
-                console.debug("/api/spotify/country-tracks ->", data);
 
-            if (data && data.error) {
-                // fallback to sample tracks so UI remains usable
-                setTracks(SAMPLE_TRACKS);
-            } else {
-                setTracks(data.tracks && data.tracks.length ? data.tracks : []);
-            }
-        })
-        .catch((err) => {
+        try {
+            fetch(url)
+                .then((r) => r.json())
+                .then((data) => {
+                    if (!mounted) return;
+                    console.debug("/api/spotify/country-tracks ->", data);
+    
+                    if (data && data.error) {
+                        // fallback to sample tracks so UI remains usable
+                        setTracks(SAMPLE_TRACKS);
+                    } else {
+                        setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+                    }
+                });
+        } catch (err) {
             console.error("Failed to fetch playlist", err);
             if (mounted) {
                 setTracks(SAMPLE_TRACKS);
             }
-        });
+        }
 
         return () => {
             mounted = false;
         };
-    }, [country, accessToken]);
+    }, [country]);
 
     return (
         <div>

@@ -116,7 +116,8 @@ const COUNTRY_TO_CONTINENT = {
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const countryCode = searchParams.get("countryCode")?.toUpperCase();
-  const userToken = searchParams.get("userToken"); // Optional user access token
+  const userToken = searchParams.get("userToken");
+  // console.log(searchParams);
 
   if (!countryCode) {
     return NextResponse.json(
