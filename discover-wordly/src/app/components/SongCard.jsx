@@ -20,12 +20,6 @@ export default function SongCard({ track = {}, onLike, onSkip }) {
 	// local helpers
 	const threshold = 120; // px required to count as like/skip
 
-	useEffect(() => {
-		// Reset released when track changes
-		setReleased(false);
-		setTranslate({ x: 0, y: 0 });
-	}, [spotifyId, title, artist, albumArt]);
-
 	function handlePointerDown(e) {
 		// Only allow left mouse button or touch
 		if (e.pointerType === "mouse" && e.button !== 0) return;
