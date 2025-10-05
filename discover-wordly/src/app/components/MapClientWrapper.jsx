@@ -45,7 +45,8 @@ export default function MapClientWrapper() {
         
         // Build URL with optional user token for better access
         let url = `http://localhost:3000/api/spotify/country-tracks?countryCode=${country}`;
-        if (accessToken) {
+        if (accessToken && typeof(accessToken) == string) {
+            console.log(accessToken);
             url += `?&userToken=${encodeURIComponent(accessToken)}`;
         } else {
             url += `?&userToken=${null}`;
