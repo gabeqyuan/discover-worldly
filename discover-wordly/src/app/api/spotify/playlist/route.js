@@ -67,9 +67,9 @@ if (!playlistRes.ok) {
 
 const playlistMeta = await playlistRes.json();
 
-// 🎵 Now fetch tracks
+// 🎵 Now fetch tracks with market parameter for better availability
 const tracksRes = await fetch(
-    `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+    `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50&market=US`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
 );
 
@@ -85,17 +85,18 @@ const tracksJson = await tracksRes.json();
 const items = tracksJson.items || [];
 
 const mapped = items
+    .filter((item) => item && item.track && item.track.id) // Skip null tracks
     .map((item) => {
-    const t = item.track || {};
+    const t = item.track;
     return {
         id: t.id,
-        title: t.name,
-        artist: t.artists?.map((a) => a.name).join(", ") || "",
+        title: t.name || "Unknown Title",
+        artist: t.artists?.map((a) => a.name).join(", ") || "Unknown Artist",
         albumArt: t.album?.images?.[0]?.url || "",
         spotifyId: t.id,
     };
     })
-    .filter((t) => !!t.spotifyId);
+    .filter((t) => !!t.spotifyId && t.title !== "Unknown Title");
 
 return NextResponse.json({
     playlist: {

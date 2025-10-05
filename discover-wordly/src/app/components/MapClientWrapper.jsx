@@ -60,11 +60,22 @@ export default function MapClientWrapper() {
 
             if (data && data.error) {
                 // API returned an error (likely missing env vars or token problem)
+                console.error("Spotify API Error:", data);
                 setError(data.error + (data.details ? `: ${data.details}` : ""));
+                setTrackSource("error");
                 // fallback to sample tracks so UI remains usable
                 setTracks(SAMPLE_TRACKS);
+            } else if (data && data.tracks) {
+                // Successfully got tracks - update both tracks and source
+                setTracks(data.tracks.length ? data.tracks : []);
+                setTrackSource(data.source || "unknown");
+                setError(null);
+                console.log(`Loaded ${data.tracks.length} tracks from ${data.source} source for ${country}`);
             } else {
-                setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+                console.error("Unexpected API response format:", data);
+                setError("Invalid response from API");
+                setTrackSource("error");
+                setTracks(SAMPLE_TRACKS);
             }
         })
         .catch((err) => {

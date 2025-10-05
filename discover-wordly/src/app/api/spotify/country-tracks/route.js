@@ -182,8 +182,9 @@ export async function GET(req) {
     }
 
     // 🎵 Fetch playlist tracks
+    // Add market parameter to get region-appropriate track availability
     const tracksRes = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50&market=from_token`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 
@@ -198,30 +199,43 @@ export async function GET(req) {
     const tracksJson = await tracksRes.json();
     const items = tracksJson.items || [];
 
+    // Filter and map tracks, handling potential null/undefined values
     const mapped = items
+      .filter((item) => item && item.track && item.track.id) // Skip null tracks
       .map((item) => {
-        const t = item.track || {};
+        const t = item.track;
         return {
           id: t.id,
-          title: t.name,
-          artist: t.artists?.map((a) => a.name).join(", ") || "",
+          title: t.name || "Unknown Title",
+          artist: t.artists?.map((a) => a.name).join(", ") || "Unknown Artist",
           albumArt: t.album?.images?.[0]?.url || "",
           spotifyId: t.id,
         };
       })
-      .filter((t) => !!t.spotifyId);
+      .filter((t) => !!t.spotifyId && t.title !== "Unknown Title"); // Ensure valid tracks
+
+    // Log if we have too few tracks
+    if (mapped.length < 10) {
+      console.warn(`Only found ${mapped.length} valid tracks for playlist ${playlistId} (country: ${countryCode})`);
+    }
 
     // Get 10 random tracks
     const shuffled = mapped.sort(() => 0.5 - Math.random());
-    const selectedTracks = shuffled.slice(0, 10);
+    const selectedTracks = shuffled.slice(0, Math.min(10, mapped.length));
 
-    return NextResponse.json({
+    const response = {
       countryCode,
       source, // "country", "continent", or "global"
       playlistId,
       tracks: selectedTracks,
       authType: userToken ? "user" : "client_credentials", // Which auth was used
-    });
+      totalTracksInPlaylist: items.length,
+      validTracksFound: mapped.length,
+    };
+
+    console.log(`✅ Spotify API Success: ${countryCode} (${source}) - ${selectedTracks.length} tracks returned`);
+    
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching country tracks:", error);
     return NextResponse.json(
