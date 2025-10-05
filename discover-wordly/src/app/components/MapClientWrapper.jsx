@@ -65,6 +65,7 @@ export default function MapClientWrapper() {
                 setTracks(SAMPLE_TRACKS);
             } else {
                 setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+                setTrackSource(data.source || null);
             }
         })
         .catch((err) => {
@@ -165,6 +166,7 @@ export default function MapClientWrapper() {
                                     </div>
                                     {trackSource && trackSource !== "error" && (
                                         <div style={{ fontSize: 13, opacity: 0.7 }}>
+                                            {trackSource === "toplists" && "🎵 Top 50 from Spotify Toplists"}
                                             {trackSource === "country" && "🎵 Top songs from this country"}
                                             {trackSource === "continent" && "🌍 Top songs from this continent"}
                                             {trackSource === "global" && "🌐 Global top songs"}

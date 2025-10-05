@@ -118,30 +118,11 @@ export async function GET(req) {
   const countryCode = searchParams.get("countryCode")?.toUpperCase();
   const userToken = searchParams.get("userToken"); // Optional user access token
 
-  if (!countryCode) {
+  if (!countryCode || !/^[A-Z]{2}$/.test(countryCode)) {
     return NextResponse.json(
-      { error: "Missing countryCode parameter" },
+      { error: "Missing or invalid countryCode parameter (expect 2-letter code)" },
       { status: 400 }
     );
-  }
-
-  // Determine which playlist to use
-  let playlistId = COUNTRY_PLAYLISTS[countryCode];
-  let source = "country";
-
-  // If no country-specific playlist, fall back to continent
-  if (!playlistId) {
-    const continent = COUNTRY_TO_CONTINENT[countryCode];
-    if (continent) {
-      playlistId = CONTINENT_PLAYLISTS[continent];
-      source = "continent";
-    }
-  }
-
-  // If still no playlist, use global top 50
-  if (!playlistId) {
-    playlistId = "37i9dQZF1DXcBWIGoYBM5M"; // Today's Top Hits (Global)
-    source = "global";
   }
 
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -154,36 +135,118 @@ export async function GET(req) {
     );
   }
 
-  try {
-    let accessToken = userToken; // Try to use user token first
+  // Helper to fetch access token via Client Credentials when user token not provided
+  async function getAccessToken() {
+    if (userToken) return userToken;
+    const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization:
+          "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
+      },
+      body: "grant_type=client_credentials",
+    });
 
-    // If no user token provided, fall back to Client Credentials
-    if (!accessToken) {
-      const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization:
-            "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
-        },
-        body: "grant_type=client_credentials",
+    if (!tokenRes.ok) {
+      const text = await tokenRes.text();
+      throw new Error(`token_error:${tokenRes.status}:${text}`);
+    }
+    const tokenData = await tokenRes.json();
+    return tokenData.access_token;
+  }
+
+  // Determine a supported Spotify market to use for API filtering
+  async function resolveEffectiveMarket(accessToken) {
+    // Default to requested country; fallback to regional default if unsupported
+    const CONTINENT_DEFAULT_MARKET = {
+      "North America": "US",
+      "South America": "BR",
+      Europe: "GB",
+      Asia: "IN",
+      Africa: "ZA",
+      Oceania: "AU",
+    };
+
+    try {
+      const marketsRes = await fetch("https://api.spotify.com/v1/markets", {
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-
-      if (!tokenRes.ok) {
-        const text = await tokenRes.text();
-        return NextResponse.json(
-          { error: "token_error", status: tokenRes.status, details: text },
-          { status: 500 }
-        );
+      if (marketsRes.ok) {
+        const json = await marketsRes.json();
+        const markets = Array.isArray(json?.markets) ? json.markets : [];
+        if (markets.includes(countryCode)) return countryCode;
       }
+    } catch {}
 
-      const tokenData = await tokenRes.json();
-      accessToken = tokenData.access_token;
+    // If not supported, try continent default; else US
+    const continent = COUNTRY_TO_CONTINENT[countryCode];
+    const regional = continent ? CONTINENT_DEFAULT_MARKET[continent] : undefined;
+    return regional || "US";
+  }
+
+  // Try to discover the official "Top 50" playlist for the given country dynamically
+  async function resolvePlaylistId(accessToken, effectiveMarket) {
+    try {
+      const toplistsRes = await fetch(
+        `https://api.spotify.com/v1/browse/categories/toplists/playlists?country=${encodeURIComponent(
+          effectiveMarket
+        )}&limit=50`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (toplistsRes.ok) {
+        const json = await toplistsRes.json();
+        const items = json?.playlists?.items || [];
+        const lower = (s) => (typeof s === "string" ? s.toLowerCase() : "");
+        // Prefer country-specific Top 50 (exclude Global), owned by Spotify
+        const top50Country =
+          items.find(
+            (p) =>
+              lower(p?.name).includes("top 50") &&
+              !lower(p?.name).includes("global") &&
+              lower(p?.owner?.display_name) === "spotify"
+          ) ||
+          // Fallback: any Top 50 owned by Spotify
+          items.find(
+            (p) => lower(p?.name).includes("top 50") && lower(p?.owner?.display_name) === "spotify"
+          ) ||
+          // Last resort: Global Top 50
+          items.find((p) => lower(p?.name).includes("top 50") && lower(p?.name).includes("global"));
+
+        if (top50Country?.id) {
+          const isGlobal = lower(top50Country.name).includes("global");
+          return { playlistId: top50Country.id, source: isGlobal ? "global" : "toplists" };
+        }
+      }
+    } catch (e) {
+      // Ignore discovery errors and fall back to static mapping below
     }
 
-    // 🎵 Fetch playlist tracks
+    // Static mapping fallback
+    let fallbackId = COUNTRY_PLAYLISTS[countryCode];
+    if (fallbackId) return { playlistId: fallbackId, source: "country" };
+
+    const continent = COUNTRY_TO_CONTINENT[countryCode];
+    if (continent) {
+      const contId = CONTINENT_PLAYLISTS[continent];
+      if (contId) return { playlistId: contId, source: "continent" };
+    }
+
+    // Global fallback
+    return { playlistId: "37i9dQZF1DXcBWIGoYBM5M", source: "global" }; // Today's Top Hits (Global)
+  }
+
+  try {
+    const accessToken = await getAccessToken();
+    const effectiveMarket = await resolveEffectiveMarket(accessToken);
+    const { playlistId, source } = await resolvePlaylistId(accessToken, effectiveMarket);
+
+    // Fetch playlist tracks, filtered for requested market to ensure playability
     const tracksRes = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50&market=${encodeURIComponent(
+        effectiveMarket
+      )}`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 
@@ -217,10 +280,11 @@ export async function GET(req) {
 
     return NextResponse.json({
       countryCode,
-      source, // "country", "continent", or "global"
+      source, // "toplists", "country", "continent", or "global"
       playlistId,
       tracks: selectedTracks,
       authType: userToken ? "user" : "client_credentials", // Which auth was used
+      market: effectiveMarket,
     });
   } catch (error) {
     console.error("Error fetching country tracks:", error);
