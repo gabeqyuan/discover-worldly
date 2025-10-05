@@ -27,13 +27,14 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 		},
 	];
 
-		// Maintain the list of remaining cards in state so we can remove the top card on swipe.
-		// Initialize from `tracks` prop when available, otherwise fall back to sampleTracks.
-		const [cards, setCards] = useState(tracks && tracks.length ? tracks : sampleTracks);
-
-	// animating state: when a card is liked/skipped we animate it off-screen first,
-	// then remove it from the deck after the animation completes.
-	const [animating, setAnimating] = useState({ action: null, trackId: null });
+	// Maintain the list of remaining cards in state so we can remove the top card on swipe.
+	// Initialize from `tracks` prop when available, otherwise fall back to sampleTracks.
+	const [cards, setCards] = useState(() => {
+		console.log(`[SWIPEDECK] Initializing with ${tracks?.length || 0} tracks`);
+		return tracks && tracks.length ? tracks : sampleTracks;
+	});		// animating state: when a card is liked/skipped we animate it off-screen first,
+		// then remove it from the deck after the animation completes.
+		const [animating, setAnimating] = useState({ action: null, trackId: null });
 
 	// likedTracks persist liked songs in localStorage so likes survive page reloads.
 	// Start with empty array and load from localStorage after mount to avoid hydration mismatch
@@ -49,16 +50,16 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 			if (raw) {
 				setLikedTracks(JSON.parse(raw));
 			}
-		} catch (err) {
-			console.error("Failed to load liked tracks from localStorage:", err);
-		}
-	}, []);		useEffect(() => {
-			if (typeof deckEmpty === 'function') {
-				deckEmpty(!cards || cards.length === 0);
-			}
-		}, [cards]);
+		} catch (error){
+			console.error(error);
+		};
+	}, []);
 
-		// handleAction: trigger animation and schedule removal + callback
+	useEffect(() => {
+		if (typeof deckEmpty === 'function') {
+			deckEmpty(!cards || cards.length === 0);
+		}
+	}, [cards]);		// handleAction: trigger animation and schedule removal + callback
 		const handleAction = useCallback(
 			(action, track) => {
 				// ignore if already animating a card
@@ -120,6 +121,8 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 						.slice(0, 3) // show up to 3 cards stacked for visual depth
 						.reverse()
 						.map((track, idx) => {
+							// Compute position in the original cards array for stable key
+							const cardIndex = cards.indexOf(track);
 							// compute a simple offset for stacked look (bottom card offset is larger)
 							const offset = idx * 8;
 							const zIndex = 10 + idx;
@@ -136,14 +139,14 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 
 							return (
 								<div
-									key={`${track.spotifyId ?? track.id ?? track.title}-${idx}`}
+									key={track.spotifyId ?? track.id ?? track.title}
 									style={{
 										position: "absolute",
-										left: offset,
-										top: offset,
+										left: 0,
+										top: 0,
 										zIndex,
 										transition: isTop ? "transform 420ms ease-out" : "none",
-										transform: transformStyle,
+										transform: transformStyle || `translate(${offset}px, ${offset}px)`,
 									}}
 								>
 									{/*
@@ -184,7 +187,7 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 						<div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
 							{likedTracks.slice(0, 8).map((t, i) => (
 								<div key={`${t.spotifyId ?? t.id ?? t.title}-${i}`} style={{ width: 64, textAlign: "center" }}>
-									<img src={t.albumArt} alt={t.title} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 6 }} />
+									<img src={t?.albumArt || null} alt={t.title} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 6 }} />
 									<div style={{ fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</div>
 								</div>
 							))}

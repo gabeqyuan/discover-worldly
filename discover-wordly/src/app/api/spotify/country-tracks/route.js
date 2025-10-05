@@ -1,5 +1,52 @@
 import { NextResponse } from "next/server";
 
+// Map country codes to full country names for better search results
+const COUNTRY_NAMES = {
+  // North America
+  US: "United States", CA: "Canada", MX: "Mexico",
+  GT: "Guatemala", HN: "Honduras", SV: "El Salvador", NI: "Nicaragua",
+  CR: "Costa Rica", PA: "Panama", BZ: "Belize", CU: "Cuba", JM: "Jamaica",
+  HT: "Haiti", DO: "Dominican Republic",
+  
+  // South America
+  BR: "Brazil", AR: "Argentina", CL: "Chile", CO: "Colombia", PE: "Peru",
+  VE: "Venezuela", EC: "Ecuador", BO: "Bolivia", PY: "Paraguay", UY: "Uruguay",
+  GY: "Guyana", SR: "Suriname",
+  
+  // Europe
+  GB: "United Kingdom", DE: "Germany", FR: "France", ES: "Spain", IT: "Italy",
+  RU: "Russia", PL: "Poland", NL: "Netherlands", SE: "Sweden", NO: "Norway",
+  DK: "Denmark", FI: "Finland", PT: "Portugal", GR: "Greece", AT: "Austria",
+  BE: "Belgium", CH: "Switzerland", CZ: "Czech Republic", HU: "Hungary",
+  IE: "Ireland", HR: "Croatia", BG: "Bulgaria", RO: "Romania", UA: "Ukraine",
+  RS: "Serbia", SK: "Slovakia", SI: "Slovenia", LT: "Lithuania", LV: "Latvia",
+  EE: "Estonia", IS: "Iceland", LU: "Luxembourg", MT: "Malta",
+  
+  // Asia
+  JP: "Japan", KR: "South Korea", CN: "China", IN: "India", TH: "Thailand",
+  ID: "Indonesia", PH: "Philippines", MY: "Malaysia", SG: "Singapore",
+  VN: "Vietnam", PK: "Pakistan", BD: "Bangladesh", MM: "Myanmar", KH: "Cambodia",
+  LA: "Laos", NP: "Nepal", LK: "Sri Lanka", AF: "Afghanistan", MN: "Mongolia",
+  KZ: "Kazakhstan",
+  
+  // Middle East
+  TR: "Turkey", SA: "Saudi Arabia", AE: "United Arab Emirates", IL: "Israel",
+  IQ: "Iraq", IR: "Iran", SY: "Syria", JO: "Jordan", LB: "Lebanon",
+  YE: "Yemen", OM: "Oman", KW: "Kuwait", QA: "Qatar", BH: "Bahrain",
+  
+  // Africa
+  ZA: "South Africa", NG: "Nigeria", EG: "Egypt", KE: "Kenya", GH: "Ghana",
+  TZ: "Tanzania", UG: "Uganda", ET: "Ethiopia", MA: "Morocco", DZ: "Algeria",
+  TN: "Tunisia", LY: "Libya", SD: "Sudan", AO: "Angola", MZ: "Mozambique",
+  ZW: "Zimbabwe", CI: "Ivory Coast", CM: "Cameroon", SN: "Senegal", ML: "Mali",
+  NE: "Niger", BF: "Burkina Faso", TD: "Chad", BJ: "Benin", RW: "Rwanda",
+  SO: "Somalia", MW: "Malawi", ZM: "Zambia",
+  
+  // Oceania
+  AU: "Australia", NZ: "New Zealand", FJ: "Fiji", PG: "Papua New Guinea",
+  NC: "New Caledonia", PF: "French Polynesia", WS: "Samoa", TO: "Tonga",
+};
+
 // Mapping of country codes to Spotify Top 50 playlist IDs
 // Format: "COUNTRY_CODE": "PLAYLIST_ID"
 const COUNTRY_PLAYLISTS = {
@@ -54,12 +101,12 @@ const COUNTRY_PLAYLISTS = {
 
 // Continent fallback playlists
 const CONTINENT_PLAYLISTS = {
-  "North America": "37i9dQZEVXbLRQDuF5jeBp", // USA Top 50
-  "South America": "37i9dQZEVXbMXbN3EUUhlg", // Brazil Top 50
-  Europe: "37i9dQZEVXbLnolsZ8PSNw", // UK Top 50 (Global)
-  Asia: "37i9dQZEVXbLZ52XmnySJg", // India Top 50
-  Africa: "37i9dQZEVXbMH2jvi6jvjk", // South Africa Top 50
-  Oceania: "37i9dQZEVXbJPcfkRz0wJ0", // Australia Top 50
+  "North America": "4JgPn5zouXilXoM2v1Istn",
+  "South America": "36iYF0nny5q8EpNuEVWZZF",
+  Europe: "0YlKjOoYHRP4ip32kIa549",
+  Asia: "54aDiYiCGEpQNwVSPU2RxG",
+  Africa: "5ofljPANS7OVhLqVt8b6zs",
+  Oceania: "3WBem7NkrBwqDd9CWtz6u3"
 };
 
 // Map country codes to continents
@@ -114,39 +161,73 @@ const COUNTRY_TO_CONTINENT = {
   NC: "Oceania", PF: "Oceania", WS: "Oceania", TO: "Oceania",
 };
 
+const TOP_SONGS = {
+  US: "2d4lZtxOjli4D73GfmGCFA",
+  IN: "3fqHSMwCe1j3Z91tnXmuHQ",
+  CN: "0n9pUnDvJEIavvDfGnJqJl",
+  ID: "68CsCvj1yJdzGv8Fprl7k5",
+  PK: "6BymTJF70MjeaIjEbZREfc",
+  NG: "6e1PM4vAlhabqCta00ebSg",
+  BR: "596Uy4sdomPqDeihQbEojV",
+  BD: "51rX1gOpr4X79v0Y3hQapG",
+  RU: "6qv7CRaZr9nJaamM8Xtrv6",
+  MX: "4GYEN4ZTL60fZIWyVw0uRC",
+  ET: "7dM4QqLCVFDWKNHlOtI1fB",
+  JP: "4Bsknjekv8HNfUF57ELNot",
+  PH: "3pKv7e4IED9iF7OKOogsaB",
+  EG: "6kkFwZUEpEmE9NKjmawsNE",
+  VN: "6tU1cBMEBs16AcqqzvNXar",
+  CD: "1QMQPceQE2evCvFZBEhTKf",
+  IR: "6t7RxmqHXhqgGjqcU8A5zD",
+  TR: "2ShGT3Q36INUC5cRyCMW8d",
+  DE: "0KwsbLDSEy7A5P9xHn1qGu",
+  TH: "5ITXdARLNLeuN5JmT2eCwb",
+  GB: "2hOekbRxaOqrqBWqlY5gaB",
+  FR: "2IgPkhcHbgQ4s4PdCxljAx",
+  IT: "6YY4TwrvBGdnLp1XQEfhTJ",
+  TZ: "5cmulzRnTs9d1Nlh3XFsKA",
+  ZA: "36iYF0nny5q8EpNuEVWZZF",
+  MM: "4J8TwKa2p6irrJ1PM4hvNg",
+  KE: "2Z26gAgauS8LNM0a6mgxob",
+  KR: "4KJCOntsptolLYjUhTcNjv",
+  CO: "5bULIS1NivSjkOasIHWdVS",
+
+  ES: "",
+  UG: "",
+  AR: "",
+  DZ: "",
+  SD: "",
+  UA: "",
+  IQ: "",
+  AF: "",
+  PL: "",
+  CA: "",
+  MA: "",
+  SA: "",
+  UZ: "",
+  PE: "",
+  AO: "",
+  MY: "",
+  MZ: "",
+  GH: "",
+  YE: "",
+  NP: "",
+  VE: ""
+}
+
 // GET /api/spotify/country-tracks?countryCode=US&userToken=...
 export async function GET(req) {
+  console.log("[ROUTE] country-tracks GET function called");
   const { searchParams } = new URL(req.url);
   const countryCode = searchParams.get("countryCode")?.toUpperCase();
   const userToken = searchParams.get("userToken");
-  // console.log(searchParams);
+  console.log(`[ROUTE] countryCode=${countryCode}, userToken=${userToken ? 'provided' : 'none'}`);
 
   if (!countryCode) {
     return NextResponse.json(
       { error: "Missing countryCode parameter" },
       { status: 400 }
     );
-  }
-
-  // Determine which playlist to use
-  // let playlistId = COUNTRY_PLAYLISTS[countryCode];
-  let playlistId = "37vVbInEzfnXJQjVuU7bAZ";
-
-  let source = "country";
-
-  // If no country-specific playlist, fall back to continent
-  if (!playlistId) {
-    const continent = COUNTRY_TO_CONTINENT[countryCode];
-    if (continent) {
-      playlistId = CONTINENT_PLAYLISTS[continent];
-      source = "continent";
-    }
-  }
-
-  // If still no playlist, use global top 50
-  if (!playlistId) {
-    playlistId = "37vVbInEzfnXJQjVuU7bAZ"; // Global Top 50 (Valid as of 2024+)
-    source = "global";
   }
 
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -160,9 +241,9 @@ export async function GET(req) {
   }
 
   try {
-    let accessToken = userToken; // Try to use user token first
+    let accessToken = userToken;
 
-    // If no user token provided, fall back to Client Credentials
+    // Get access token if not provided
     if (!accessToken) {
       const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
@@ -186,9 +267,130 @@ export async function GET(req) {
       accessToken = tokenData.access_token;
     }
 
-    // 🎵 Fetch playlist tracks
+    // Search for community playlists (NOT Spotify-owned)
+    let playlistId = null;
+    let source = "community";
+    
+    // Get full country name for better search results
+    const countryName = COUNTRY_NAMES[countryCode] || countryCode;
+    console.log(`[COUNTRY-TRACKS] Searching for community playlists in ${countryName} (${countryCode})`);
+    
+    try {
+      // Search using full country name for better results
+      const searchQueries = [
+        `top hits ${countryName}`,
+        `popular ${countryName}`,
+        `best of ${countryName}`,
+        `${countryName} music`,
+        `top ${countryName}`
+      ];
+      
+      for (const query of searchQueries) {
+        console.log(`[SEARCH] Trying query: "${query}"`);
+        const searchRes = await fetch(
+          `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&market=${countryCode}&limit=50`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        console.log(`[SEARCH] Response status: ${searchRes.status}`);
+
+        if (searchRes.ok) {
+          const searchData = await searchRes.json();
+          const allPlaylists = searchData.playlists?.items || [];
+          
+          // Filter for community playlists only (NOT Spotify-owned)
+          const communityPlaylists = allPlaylists.filter(p => 
+            p && p.owner?.id !== "spotify" && p.tracks?.total > 10
+          );
+
+          console.log(`[SEARCH] Found ${allPlaylists.length} total, ${communityPlaylists.length} community playlists`);
+          
+          // Try first community playlist and get 7 random tracks
+          for (const playlist of communityPlaylists.slice(0, 1)) {
+            console.log(`[TEST] "${playlist.name}" by ${playlist.owner.display_name || playlist.owner.id} (${playlist.tracks?.total} tracks)`);
+            
+            // Get 50 tracks and we'll randomly pick 7
+            const tracksRes = await fetch(
+              `https://api.spotify.com/v1/playlists/${playlist.id}/tracks?limit=50&market=${countryCode}`,
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+            
+            if (tracksRes.ok) {
+              const tracksData = await tracksRes.json();
+              const items = tracksData.items || [];
+              console.log(`[SUCCESS] ✓ Got ${items.length} tracks from "${playlist.name}"`);
+              
+              if (items.length > 0) {
+                // Transform tracks to expected format
+                const mapped = items
+                  .map((item) => {
+                    const t = item.track || {};
+                    return {
+                      id: t.id,
+                      title: t.name,
+                      artist: t.artists?.map((a) => a.name).join(", ") || "Unknown Artist",
+                      albumArt: t.album?.images?.[0]?.url || "",
+                      spotifyId: t.id,
+                    };
+                  })
+                  .filter((t) => !!t.spotifyId);
+
+                console.log(`[FORMAT] Mapped ${mapped.length} valid tracks`);
+                
+                // Shuffle and take 7 random tracks
+                const shuffled = mapped.sort(() => 0.5 - Math.random());
+                const selectedTracks = shuffled.slice(0, 7);
+                
+                console.log(`[COMPLETE] Returning ${selectedTracks.length} random tracks`);
+                
+                return NextResponse.json({
+                  tracks: selectedTracks,
+                  country: countryCode,
+                  source: "community",
+                  playlistName: playlist.name,
+                  playlistOwner: playlist.owner.display_name || playlist.owner.id,
+                  message: `${selectedTracks.length} tracks from community playlist: ${playlist.name}`
+                }, {
+                  headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                  }
+                });
+              }
+            } else {
+              console.log(`[TEST] ✗ Failed with status ${tracksRes.status}`);
+            }
+          }
+        }
+      }
+      
+      console.log(`[WARNING] No accessible community playlists found after trying all search queries`);
+    } catch (searchError) {
+      console.error("[ERROR] Search failed:", searchError);
+    }
+
+    // Fallback to hardcoded mappings if Browse didn't work
+    if (!playlistId) {
+      playlistId = COUNTRY_PLAYLISTS[countryCode];
+      source = "country";
+    }
+
+    if (!playlistId) {
+      const continent = COUNTRY_TO_CONTINENT[countryCode];
+      if (continent) {
+        playlistId = CONTINENT_PLAYLISTS[continent];
+        source = "continent";
+      }
+    }
+
+    if (!playlistId) {
+      playlistId = "37vVbInEzfnXJQjVuU7bAZ";
+      source = "global";
+    }
+
+    // Fetch playlist tracks with market filter
     const tracksRes = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50&market=${countryCode}`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 
@@ -218,11 +420,10 @@ export async function GET(req) {
 
     // Get 10 random tracks
     const shuffled = mapped.sort(() => 0.5 - Math.random());
-    const selectedTracks = shuffled.slice(0, 10);
+    const selectedTracks = shuffled.slice(0, 6);
 
     return NextResponse.json({
       countryCode,
-      source, // "country", "continent", or "global"
       playlistId,
       tracks: selectedTracks,
       authType: userToken ? "user" : "client_credentials", // Which auth was used
