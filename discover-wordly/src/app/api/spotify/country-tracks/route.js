@@ -1,57 +1,5 @@
 import { NextResponse } from "next/server";
 
-// Mapping of country codes to Spotify Top 50 playlist IDs
-// Format: "COUNTRY_CODE": "PLAYLIST_ID"
-const COUNTRY_PLAYLISTS = {
-  // North America
-  US: "37i9dQZEVXbLRQDuF5jeBp", // USA Top 50
-  CA: "37i9dQZEVXbKj23U1GF4IR", // Canada Top 50
-  MX: "37i9dQZEVXbO3qyFxbkOE1", // Mexico Top 50
-  
-  // South America
-  BR: "37i9dQZEVXbMXbN3EUUhlg", // Brazil Top 50
-  AR: "37i9dQZEVXbMMy2roB9myp", // Argentina Top 50
-  CL: "37i9dQZEVXbL0GavIqMTeb", // Chile Top 50
-  CO: "37i9dQZEVXbOa2lmxNORXQ", // Colombia Top 50
-  
-  // Europe
-  GB: "37i9dQZEVXbLnolsZ8PSNw", // UK Top 50
-  DE: "37i9dQZEVXbJiZcmkrIHGU", // Germany Top 50
-  FR: "37i9dQZEVXbIPWwFssbupI", // France Top 50
-  ES: "37i9dQZEVXbNFJfN1Vw8d9", // Spain Top 50
-  IT: "37i9dQZEVXbIQnj7RRhdSX", // Italy Top 50
-  NL: "37i9dQZEVXbKCF6dqVpDkS", // Netherlands Top 50
-  SE: "37i9dQZEVXbLoATJ81JYXz", // Sweden Top 50
-  NO: "37i9dQZEVXbJvfa0Yxg7E7", // Norway Top 50
-  DK: "37i9dQZEVXbL3J0k32lWnN", // Denmark Top 50
-  FI: "37i9dQZEVXbMxcczTSoGwZ", // Finland Top 50
-  PL: "37i9dQZEVXbN6itCcaL3Tt", // Poland Top 50
-  
-  // Asia
-  JP: "37i9dQZEVXbKXQ4mDTEBXq", // Japan Top 50
-  KR: "37i9dQZEVXbNxXF4SkHj9F", // South Korea Top 50
-  IN: "37i9dQZEVXbLZ52XmnySJg", // India Top 50
-  TH: "37i9dQZEVXbMnz8KIWsvf9", // Thailand Top 50
-  ID: "37i9dQZEVXbObFQZ3JLcXt", // Indonesia Top 50
-  PH: "37i9dQZEVXbNBz9cRCSFkY", // Philippines Top 50
-  MY: "37i9dQZEVXbJlfUljuZExa", // Malaysia Top 50
-  SG: "37i9dQZEVXbK4gjvS1FjPY", // Singapore Top 50
-  
-  // Oceania
-  AU: "37i9dQZEVXbJPcfkRz0wJ0", // Australia Top 50
-  NZ: "37i9dQZEVXbM8SIrkERIYl", // New Zealand Top 50
-  
-  // Middle East
-  AE: "37i9dQZEVXbM4UZuIrvHvA", // UAE Top 50
-  SA: "37i9dQZEVXbLrQBcXqUtaC", // Saudi Arabia Top 50
-  TR: "37i9dQZEVXbIVYVBNw9D5K", // Turkey Top 50
-  
-  // Africa
-  ZA: "37i9dQZEVXbMH2jvi6jvjk", // South Africa Top 50
-  NG: "37i9dQZEVXbKY7jLzlJ11V", // Nigeria Top 50
-  EG: "37i9dQZEVXbLn7RQmT5Xv2", // Egypt Top 50
-};
-
 // Continent fallback playlists
 const CONTINENT_PLAYLISTS = {
   "North America": "37i9dQZEVXbLRQDuF5jeBp", // USA Top 50
@@ -114,6 +62,60 @@ const COUNTRY_TO_CONTINENT = {
   NC: "Oceania", PF: "Oceania", WS: "Oceania", TO: "Oceania",
 };
 
+const TOP_SONGS = {
+  US: "2d4lZtxOjli4D73GfmGCFA",
+  IN: "3fqHSMwCe1j3Z91tnXmuHQ",
+  CN: "0n9pUnDvJEIavvDfGnJqJl",
+  ID: "68CsCvj1yJdzGv8Fprl7k5",
+  PK: "6BymTJF70MjeaIjEbZREfc",
+  NG: "6e1PM4vAlhabqCta00ebSg",
+  BR: "596Uy4sdomPqDeihQbEojV",
+  BD: "51rX1gOpr4X79v0Y3hQapG",
+  RU: "6qv7CRaZr9nJaamM8Xtrv6",
+  MX: "4GYEN4ZTL60fZIWyVw0uRC",
+  ET: "7dM4QqLCVFDWKNHlOtI1fB",
+  JP: "4Bsknjekv8HNfUF57ELNot",
+  PH: "3pKv7e4IED9iF7OKOogsaB",
+  EG: "6kkFwZUEpEmE9NKjmawsNE",
+  VN: "6tU1cBMEBs16AcqqzvNXar",
+  CD: "1QMQPceQE2evCvFZBEhTKf",
+  IR: "6t7RxmqHXhqgGjqcU8A5zD",
+  TR: "2ShGT3Q36INUC5cRyCMW8d",
+  DE: "0KwsbLDSEy7A5P9xHn1qGu",
+  TH: "5ITXdARLNLeuN5JmT2eCwb",
+  GB: "2hOekbRxaOqrqBWqlY5gaB",
+  FR: "2IgPkhcHbgQ4s4PdCxljAx",
+  IT: "6YY4TwrvBGdnLp1XQEfhTJ",
+  TZ: "5cmulzRnTs9d1Nlh3XFsKA",
+  ZA: "36iYF0nny5q8EpNuEVWZZF",
+  MM: "4J8TwKa2p6irrJ1PM4hvNg",
+  KE: "2Z26gAgauS8LNM0a6mgxob",
+  KR: "4KJCOntsptolLYjUhTcNjv",
+  CO: "5bULIS1NivSjkOasIHWdVS",
+
+  ES: "",
+  UG: "",
+  AR: "",
+  DZ: "",
+  SD: "",
+  UA: "",
+  IQ: "",
+  AF: "",
+  PL: "",
+  CA: "",
+  MA: "",
+  SA: "",
+  UZ: "",
+  PE: "",
+  AO: "",
+  MY: "",
+  MZ: "",
+  GH: "",
+  YE: "",
+  NP: "",
+  VE: ""
+}
+
 // GET /api/spotify/country-tracks?countryCode=US&userToken=...
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
@@ -129,24 +131,19 @@ export async function GET(req) {
   }
 
   // Determine which playlist to use
-  // let playlistId = COUNTRY_PLAYLISTS[countryCode];
-  let playlistId = "37vVbInEzfnXJQjVuU7bAZ";
-
-  let source = "country";
+  let playlistId = TOP_SONGS[countryCode];
 
   // If no country-specific playlist, fall back to continent
   if (!playlistId) {
     const continent = COUNTRY_TO_CONTINENT[countryCode];
     if (continent) {
       playlistId = CONTINENT_PLAYLISTS[continent];
-      source = "continent";
     }
   }
 
   // If still no playlist, use global top 50
   if (!playlistId) {
-    playlistId = "37vVbInEzfnXJQjVuU7bAZ"; // Global Top 50 (Valid as of 2024+)
-    source = "global";
+    playlistId = "37vVbInEzfnXJQjVuU7bAZ";
   }
 
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -218,11 +215,10 @@ export async function GET(req) {
 
     // Get 10 random tracks
     const shuffled = mapped.sort(() => 0.5 - Math.random());
-    const selectedTracks = shuffled.slice(0, 10);
+    const selectedTracks = shuffled.slice(0, 6);
 
     return NextResponse.json({
       countryCode,
-      source, // "country", "continent", or "global"
       playlistId,
       tracks: selectedTracks,
       authType: userToken ? "user" : "client_credentials", // Which auth was used

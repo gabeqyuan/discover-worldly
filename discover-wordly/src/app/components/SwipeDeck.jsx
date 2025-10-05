@@ -184,7 +184,7 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 						<div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
 							{likedTracks.slice(0, 8).map((t, i) => (
 								<div key={`${t.spotifyId ?? t.id ?? t.title}-${i}`} style={{ width: 64, textAlign: "center" }}>
-									<img src={t.albumArt} alt={t.title} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 6 }} />
+									<img src={t?.albumArt || null} alt={t.title} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 6 }} />
 									<div style={{ fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</div>
 								</div>
 							))}

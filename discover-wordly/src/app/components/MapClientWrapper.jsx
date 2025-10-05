@@ -72,9 +72,6 @@ export default function MapClientWrapper() {
                 setTracks(SAMPLE_TRACKS);
             });
 
-        return () => {
-            mounted = false;
-        };
     }, [country]);
 
     return (
