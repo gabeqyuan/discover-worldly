@@ -7,7 +7,6 @@ import PlaylistBuilder from "./PlaylistBuilder";
 import Loading from "./Loading";
 import LandingPage from "./LandingPage";
 import LogoutButton from "./LogoutButton";
-import PlaylistBuilder from "./PlaylistBuilder";
 
 export default function MapClientWrapper() {
     const { accessToken, profile, handleLogout } = useAuth();
@@ -73,10 +72,10 @@ export default function MapClientWrapper() {
     return (
         <div>
             {/* Show LandingPage overlay if not authenticated */}
-            {/* {!accessToken && <LandingPage />} */}
+            {!accessToken && <LandingPage />}
             
             {/* Show logout button when authenticated */}
-            {/* accessToken && */ (
+            {accessToken && (
                 <div style={{ 
                     position: "absolute", 
                     top: "20px", 
