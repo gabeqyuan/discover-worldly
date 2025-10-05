@@ -56,59 +56,81 @@ export default function PlaylistModal({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.75)",
+          backgroundColor: "rgba(0, 0, 0, 0.85)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 50,
-          padding: "16px"
+          zIndex: 1000,
+          padding: "20px",
+          backdropFilter: "blur(4px)"
         }}
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.8, opacity: 0, y: 50 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.8, opacity: 0, y: 50 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
           style={{
             backgroundColor: "white",
-            borderRadius: "8px",
-            maxWidth: "672px",
+            borderRadius: "16px",
+            maxWidth: "700px",
             width: "100%",
-            maxHeight: "90vh",
-            overflow: "hidden"
+            maxHeight: "85vh",
+            overflow: "hidden",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+            border: "1px solid rgba(255, 255, 255, 0.1)"
           }}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
           <div style={{
-            padding: "24px",
-            borderBottom: "1px solid #e5e7eb",
+            padding: "28px 32px",
+            background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+            color: "white",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center"
           }}>
             <div>
               <h2 style={{
-                fontSize: "24px",
+                fontSize: "28px",
                 fontWeight: "bold",
-                color: "#111827",
-                margin: 0
-              }}>Your AI-Generated Playlist</h2>
+                color: "white",
+                margin: 0,
+                textShadow: "0 2px 4px rgba(0,0,0,0.2)"
+              }}>🎵 Your AI Playlist</h2>
               <p style={{
-                color: "#6b7280",
-                marginTop: "4px",
-                margin: "4px 0 0 0"
-              }}>{recommendations.length} songs curated based on your taste</p>
+                color: "rgba(255, 255, 255, 0.9)",
+                marginTop: "6px",
+                margin: "6px 0 0 0",
+                fontSize: "16px"
+              }}>{recommendations.length} songs curated just for you</p>
             </div>
             <button
               onClick={onClose}
               style={{
-                color: "#9ca3af",
-                fontSize: "24px",
+                color: "rgba(255, 255, 255, 0.8)",
+                fontSize: "28px",
                 lineHeight: "1",
-                background: "none",
+                background: "rgba(255, 255, 255, 0.1)",
                 border: "none",
-                cursor: "pointer"
+                cursor: "pointer",
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+                e.target.style.color = "white";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                e.target.style.color = "rgba(255, 255, 255, 0.8)";
               }}
             >
               ×
@@ -117,17 +139,17 @@ export default function PlaylistModal({
 
           {/* Playlist Details Form */}
           <div style={{
-            padding: "24px",
+            padding: "28px 32px",
             borderBottom: "1px solid #e5e7eb",
-            backgroundColor: "#f9fafb"
+            backgroundColor: "#fafbfc"
           }}>
-            <div style={{ marginBottom: "16px" }}>
+            <div style={{ marginBottom: "20px" }}>
               <label style={{
                 display: "block",
-                fontSize: "14px",
-                fontWeight: "500",
+                fontSize: "15px",
+                fontWeight: "600",
                 color: "#374151",
-                marginBottom: "8px"
+                marginBottom: "10px"
               }}>
                 Playlist Name *
               </label>
@@ -138,20 +160,31 @@ export default function PlaylistModal({
                 placeholder={defaultName}
                 style={{
                   width: "100%",
-                  padding: "8px 12px",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "6px",
-                  outline: "none"
+                  padding: "12px 16px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "10px",
+                  outline: "none",
+                  fontSize: "16px",
+                  transition: "border-color 0.2s ease",
+                  boxSizing: "border-box"
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#059669";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.1)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#e5e7eb";
+                  e.target.style.boxShadow = "none";
                 }}
               />
             </div>
-            <div style={{ marginBottom: "16px" }}>
+            <div style={{ marginBottom: "8px" }}>
               <label style={{
                 display: "block",
-                fontSize: "14px",
-                fontWeight: "500",
+                fontSize: "15px",
+                fontWeight: "600",
                 color: "#374151",
-                marginBottom: "8px"
+                marginBottom: "10px"
               }}>
                 Description (Optional)
               </label>
@@ -159,14 +192,26 @@ export default function PlaylistModal({
                 value={playlistDescription}
                 onChange={(e) => setPlaylistDescription(e.target.value)}
                 placeholder="A personalized playlist created by Discover Worldly based on your music preferences..."
-                rows={2}
+                rows={3}
                 style={{
                   width: "100%",
-                  padding: "8px 12px",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "6px",
+                  padding: "12px 16px",
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "10px",
                   outline: "none",
-                  resize: "none"
+                  resize: "none",
+                  fontSize: "14px",
+                  fontFamily: "inherit",
+                  transition: "border-color 0.2s ease",
+                  boxSizing: "border-box"
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#059669";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.1)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#e5e7eb";
+                  e.target.style.boxShadow = "none";
                 }}
               />
             </div>
@@ -290,30 +335,51 @@ export default function PlaylistModal({
 
           {/* Footer Actions */}
           <div style={{
-            padding: "24px",
+            padding: "28px 32px",
             borderTop: "1px solid #e5e7eb",
-            backgroundColor: "#f9fafb",
+            backgroundColor: "#fafbfc",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center"
           }}>
             <div style={{
               fontSize: "14px",
-              color: "#6b7280"
+              color: "#6b7280",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
             }}>
+              <span style={{
+                display: "inline-block",
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                backgroundColor: "#10b981"
+              }}></span>
               {recommendations.filter(t => t.spotifyId).length} of {recommendations.length} songs found on Spotify
             </div>
             
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "16px" }}>
               <button
                 onClick={onClose}
                 style={{
-                  padding: "8px 16px",
-                  color: "#374151",
-                  backgroundColor: "#e5e7eb",
-                  borderRadius: "6px",
-                  border: "none",
-                  cursor: "pointer"
+                  padding: "12px 24px",
+                  color: "#6b7280",
+                  backgroundColor: "white",
+                  borderRadius: "10px",
+                  border: "2px solid #e5e7eb",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  transition: "all 0.2s ease"
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.borderColor = "#d1d5db";
+                  e.target.style.backgroundColor = "#f9fafb";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.borderColor = "#e5e7eb";
+                  e.target.style.backgroundColor = "white";
                 }}
               >
                 Cancel
@@ -322,22 +388,40 @@ export default function PlaylistModal({
                 onClick={handleCreatePlaylist}
                 disabled={isCreating || !playlistName.trim()}
                 style={{
-                  padding: "8px 24px",
+                  padding: "12px 28px",
                   backgroundColor: isCreating || !playlistName.trim() ? "#9ca3af" : "#059669",
                   color: "white",
-                  borderRadius: "6px",
+                  borderRadius: "10px",
                   border: "none",
                   cursor: isCreating || !playlistName.trim() ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px"
+                  gap: "10px",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  boxShadow: isCreating || !playlistName.trim() ? "none" : "0 4px 12px rgba(5, 150, 105, 0.25)",
+                  transition: "all 0.2s ease"
+                }}
+                onMouseEnter={(e) => {
+                  if (!isCreating && playlistName.trim()) {
+                    e.target.style.backgroundColor = "#047857";
+                    e.target.style.transform = "translateY(-1px)";
+                    e.target.style.boxShadow = "0 6px 16px rgba(5, 150, 105, 0.35)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isCreating && playlistName.trim()) {
+                    e.target.style.backgroundColor = "#059669";
+                    e.target.style.transform = "translateY(0px)";
+                    e.target.style.boxShadow = "0 4px 12px rgba(5, 150, 105, 0.25)";
+                  }
                 }}
               >
                 {isCreating ? (
                   <>
                     <div style={{
-                      width: "16px",
-                      height: "16px",
+                      width: "18px",
+                      height: "18px",
                       border: "2px solid transparent",
                       borderTop: "2px solid white",
                       borderRadius: "50%",
@@ -346,7 +430,10 @@ export default function PlaylistModal({
                     <span>Creating...</span>
                   </>
                 ) : (
-                  <span>Add to Spotify</span>
+                  <>
+                    <span>🎵</span>
+                    <span>Add to Spotify</span>
+                  </>
                 )}
               </button>
             </div>

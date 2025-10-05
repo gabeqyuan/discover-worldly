@@ -12,14 +12,14 @@ export async function POST(req) {
       );
     }
 
-    if (!process.env.GOOGLE_AI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: "Missing GOOGLE_AI_API_KEY" },
+        { error: "Missing GEMINI_API_KEY" },
         { status: 500 }
       );
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Format songs for better analysis
