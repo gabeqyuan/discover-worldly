@@ -7,6 +7,7 @@ import PlaylistBuilder from "./PlaylistBuilder";
 import Loading from "./Loading";
 import LandingPage from "./LandingPage";
 import LogoutButton from "./LogoutButton";
+import PlaylistBuilder from "./PlaylistBuilder";
 
 export default function MapClientWrapper() {
     const { accessToken, profile, handleLogout } = useAuth();
@@ -17,7 +18,7 @@ export default function MapClientWrapper() {
     const [dislikedSongs, setDislikedSongs] = useState([]);
     const [tracks, setTracks] = useState(null);
     const [isLoading, setLoading] = useState(false);
-    const [trackSource, setTrackSource] = useState(null); // "country", "continent", or "global"
+    const [playlistBuilding, setPlaylistBuilding] = useState(false);
 
     // Fetch country-specific tracks when country changes
     useEffect(() => {
@@ -108,7 +109,7 @@ export default function MapClientWrapper() {
             
 
             { accessToken && isVoting && tracks && tracks.length > 0 && (
-                <section style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center" }}>
+                <section style={{ width: "100%", height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck
                             key={`${country}-${tracks[0]?.spotifyId || 'loading'}`} // Force remount with unique key
@@ -124,6 +125,7 @@ export default function MapClientWrapper() {
                             deckEmpty={(c) => {
                                 setIsVoting(!c);
                                 setLoading(true);
+                                setPlaylistBuilding(true);
                                 setTimeout(() => {
                                     setLoading(false);
                                 }, 5000);
@@ -161,6 +163,17 @@ export default function MapClientWrapper() {
 
             {isLoading && (
                 <Loading/>
+            )}
+
+            {playlistBuilding && (
+                <PlaylistBuilder likedSongs={likedSongs} 
+                dislikedSongs={dislikedSongs} 
+                responseMsg={(m) => {
+                    setResponseMsg(m);
+                    setPlaylistBuilding(false);
+                }}
+                isGenerating={(l) => setIsLoading(l)}
+                />
             )}
 
             <MapRender onCountryChange={(c) => {
