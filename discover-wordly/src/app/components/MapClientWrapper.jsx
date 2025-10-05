@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import MapRender from "./MapRender";
 import SwipeDeck from "./SwipeDeck";
-// import PlaylistBuilder from "./PlaylistBuilder";
+import PlaylistBuilder from "./PlaylistBuilder";
 import Loading from "./Loading";
 import LandingPage from "./LandingPage";
 import LogoutButton from "./LogoutButton";
@@ -123,6 +123,32 @@ export default function MapClientWrapper() {
                             }}
                         />
                     </div>
+                </section>
+            )}
+
+            {/* Show PlaylistBuilder when deck is empty and user has liked songs */}
+            {!isVoting && !isLoading && likedSongs.length > 0 && (
+                <section style={{ 
+                    position: "fixed", 
+                    bottom: "20px", 
+                    left: "50%", 
+                    transform: "translateX(-50%)",
+                    zIndex: 10,
+                    width: "90%",
+                    maxWidth: "400px"
+                }}>
+                    <PlaylistBuilder
+                        likedSongs={likedSongs}
+                        dislikedSongs={dislikedSongs}
+                        countryCode={country}
+                        userToken={accessToken}
+                        onPlaylistCreated={(playlist) => {
+                            console.log("Playlist created:", playlist);
+                            // Optionally reset the liked/disliked songs after playlist creation
+                            // setLikedSongs([]);
+                            // setDislikedSongs([]);
+                        }}
+                    />
                 </section>
             )}
 

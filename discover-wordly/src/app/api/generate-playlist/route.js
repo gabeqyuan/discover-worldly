@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req) {
   try {
-    const { likedSongs, dislikedSongs } = await req.json();
+    const { likedSongs, dislikedSongs, countryCode, userToken } = await req.json();
 
     if (!likedSongs || likedSongs.length === 0) {
       return NextResponse.json(
@@ -12,42 +12,88 @@ export async function POST(req) {
       );
     }
 
-    const ai = new GoogleGenAI({
-      apiKey: process.env.GOOGLE_AI_API_KEY, // Make sure to add this to your .env file
-    });
+    if (!process.env.GOOGLE_AI_API_KEY) {
+      return NextResponse.json(
+        { error: "Missing GOOGLE_AI_API_KEY" },
+        { status: 500 }
+      );
+    }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `The user has provided two lists of songs from the same country:
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-Liked songs: ${likedSongs.join(', ')}
+    // Format songs for better analysis
+    const likedSongsList = likedSongs.map(song => `"${song.title}" by ${song.artist}`).join('\n');
+    const dislikedSongsList = dislikedSongs.length > 0 ? dislikedSongs.map(song => `"${song.title}" by ${song.artist}`).join('\n') : 'None';
 
-Disliked songs: ${dislikedSongs.join(', ')}
+    const prompt = `Based on the user's music preferences, generate a curated playlist of 15 songs.
 
-Your task is to generate a new list of recommended songs that are highly similar in style, mood, and genre to the songs in the liked list.
+LIKED SONGS:
+${likedSongsList}
 
-Important rules:
+DISLIKED SONGS:
+${dislikedSongsList}
 
-Do not include any song that appears in the disliked songs list.
+REQUIREMENTS:
+1. Analyze the musical patterns, genres, moods, and styles from the liked songs
+2. Generate 15 new song recommendations that match these preferences
+3. Include 3-5 of the original liked songs in the final playlist
+4. Avoid songs similar to the disliked ones
+5. Focus on songs from the same country/region when possible
+6. Ensure variety while maintaining the preferred style
 
-Only recommend songs that originate from the same country as the provided songs.
+RESPONSE FORMAT:
+Return ONLY a valid JSON array of objects with this exact structure:
+[
+  {
+    "title": "Song Title",
+    "artist": "Artist Name",
+    "reason": "Brief reason why this matches user's taste"
+  }
+]
 
-Prioritize songs that match the user's musical taste profile inferred from the liked list (e.g., similar artists, tempo, instrumentation, or lyrical themes).
+Do not include any other text, explanations, or formatting outside the JSON array.`;
 
-Include all songs in the liked list in your response.
-
-Your response list should include 20 songs total.
-
-Output format:
-Return your recommendations as a simple JSON-style list, formatted exactly like this:
-[song1, song2, song3, song4, ...]
-
-Do not include any explanations, commentary, or additional text — only the list of song titles.`,
-    });
-
-    const answer = response.text;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
     
-    return NextResponse.json({ recommendations: answer });
+    // Parse the JSON response
+    let recommendations;
+    try {
+      // Clean the response text in case there are markdown code blocks
+      const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      recommendations = JSON.parse(cleanText);
+    } catch (parseError) {
+      console.error('Failed to parse Gemini response:', text);
+      return NextResponse.json(
+        { error: "Failed to parse AI response", details: parseError.message },
+        { status: 500 }
+      );
+    }
+
+    // If we have Spotify access, try to enrich with Spotify data
+    if (userToken) {
+      try {
+        const enrichedRecommendations = await enrichWithSpotifyData(recommendations, userToken, countryCode);
+        return NextResponse.json({ 
+          recommendations: enrichedRecommendations,
+          source: 'ai_with_spotify',
+          originalLiked: likedSongs,
+          totalSongs: enrichedRecommendations.length
+        });
+      } catch (spotifyError) {
+        console.warn('Failed to enrich with Spotify data:', spotifyError);
+        // Fall back to AI recommendations without Spotify data
+      }
+    }
+    
+    return NextResponse.json({ 
+      recommendations,
+      source: 'ai_only',
+      originalLiked: likedSongs,
+      totalSongs: recommendations.length
+    });
   } catch (error) {
     console.error('Error generating playlist:', error);
     return NextResponse.json(
@@ -55,4 +101,43 @@ Do not include any explanations, commentary, or additional text — only the lis
       { status: 500 }
     );
   }
+}
+
+// Helper function to enrich AI recommendations with Spotify data
+async function enrichWithSpotifyData(recommendations, userToken, countryCode) {
+  const enriched = [];
+  
+  for (const rec of recommendations) {
+    try {
+      // Search for this song on Spotify
+      const searchQuery = encodeURIComponent(`${rec.title} ${rec.artist}`);
+      const searchRes = await fetch(
+        `https://api.spotify.com/v1/search?q=${searchQuery}&type=track&market=${countryCode || 'US'}&limit=1`,
+        { headers: { Authorization: `Bearer ${userToken}` } }
+      );
+      
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        const track = searchData.tracks?.items?.[0];
+        
+        if (track) {
+          enriched.push({
+            ...rec,
+            spotifyId: track.id,
+            albumArt: track.album?.images?.[0]?.url || '',
+            previewUrl: track.preview_url,
+            externalUrl: track.external_urls?.spotify
+          });
+          continue;
+        }
+      }
+    } catch (err) {
+      console.warn(`Failed to find Spotify data for "${rec.title}" by ${rec.artist}`);
+    }
+    
+    // If Spotify search failed, keep the AI recommendation without Spotify data
+    enriched.push(rec);
+  }
+  
+  return enriched;
 }
