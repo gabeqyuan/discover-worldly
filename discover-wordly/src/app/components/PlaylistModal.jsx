@@ -23,8 +23,11 @@ export default function PlaylistModal({
   isCreating = false,
   countryCode 
 }) {
-  const [playlistName, setPlaylistName] = useState("");
-  const [playlistDescription, setPlaylistDescription] = useState("");
+  // Generate a default playlist name based on country and current date
+  const defaultName = `Discover ${countryCode || 'Music'} • ${new Date().toLocaleDateString()}`;
+  
+  const [playlistName, setPlaylistName] = useState(defaultName);
+  const [playlistDescription, setPlaylistDescription] = useState("A personalized playlist created by Discover Worldly based on your music preferences");
 
   if (!isOpen || !recommendations) return null;
 
@@ -40,9 +43,6 @@ export default function PlaylistModal({
       tracks: recommendations
     });
   };
-
-  // Generate a default playlist name based on country and current date
-  const defaultName = `Discover ${countryCode || 'Music'} • ${new Date().toLocaleDateString()}`;
 
   return (
     <AnimatePresence>

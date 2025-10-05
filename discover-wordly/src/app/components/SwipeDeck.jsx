@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 // - Accepts optional `tracks` prop (array of track objects).
 // - If `tracks` is not provided, it falls back to a small sample list.
 // - Calls `onLike` / `onSkip` callbacks when a card is liked or skipped.
-export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
+export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty, onBackToMap }) {
 	// If no tracks prop is provided, use a minimal local sample so the UI can be tested.
 	const sampleTracks = [
 		{
@@ -115,8 +115,59 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 
 	// Render the stack: show the first card as the top card and the rest as a faint stack behind it.
 		return (
-			<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-				<div style={{ position: "relative", width: 340, height: 500 }}>
+			<div 
+				style={{ 
+					position: "fixed",
+					top: 0,
+					left: 0,
+					right: 0,
+					bottom: 0,
+					backgroundColor: "rgba(0, 0, 0, 0.3)",
+					display: "flex", 
+					justifyContent: "center", 
+					alignItems: "center",
+					zIndex: 1000
+				}}
+				onClick={onBackToMap}
+			>
+				<div 
+					onClick={e => e.stopPropagation()}
+					style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, position: "relative" }}
+				>
+					{/* Back to Map button */}
+					<button
+						onClick={onBackToMap}
+						style={{
+							position: "absolute",
+							top: "-60px",
+							right: "0px",
+							background: "rgba(0,0,0,0.6)",
+							color: "#fff",
+							border: "2px solid rgba(255,255,255,0.2)",
+							borderRadius: "20px",
+							padding: "8px 16px",
+							fontSize: "14px",
+							fontWeight: "500",
+							cursor: "pointer",
+							backdropFilter: "blur(10px)",
+							transition: "all 0.2s ease",
+							display: "flex",
+							alignItems: "center",
+							gap: "6px"
+						}}
+						onMouseEnter={(e) => {
+							e.target.style.background = "rgba(0,0,0,0.8)";
+							e.target.style.borderColor = "rgba(255,255,255,0.4)";
+						}}
+						onMouseLeave={(e) => {
+							e.target.style.background = "rgba(0,0,0,0.6)";
+							e.target.style.borderColor = "rgba(255,255,255,0.2)";
+						}}
+					>
+						<span>←</span>
+						<span>Back to Map</span>
+					</button>
+					<div style={{ position: "relative", width: 340, height: 500 }}>
 					{cards
 						.slice(0, 3) // show up to 3 cards stacked for visual depth
 						.reverse()
@@ -194,6 +245,7 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 						</div>
 					</div>
 				) : null}
+				</div>
 			</div>
 		);
 }

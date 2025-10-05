@@ -107,8 +107,6 @@ export default function MapClientWrapper() {
             
 
             { accessToken && isVoting && tracks && tracks.length > 0 && (
-                <section style={{ width: "100%", height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                    <div style={{ width: 380 }}>
                         <SwipeDeck
                             key={`${country}-${tracks[0]?.spotifyId || 'loading'}`} // Force remount with unique key
                             tracks={tracks}
@@ -125,24 +123,18 @@ export default function MapClientWrapper() {
                                 // Don't automatically show playlist builder when deck is empty
                                 // User should click "Generate AI Playlist" button to trigger it
                             }}
+                            onBackToMap={() => {
+                                // Reset all states and return to main map browsing
+                                setIsVoting(false);
+                                setLikedSongs([]);
+                                setDislikedSongs([]);
+                                setCountry(null);
+                            }}
                         />
-                    </div>
-                </section>
             )}
 
             {/* Show PlaylistBuilder when voting is done and user has liked songs */}
             {!isVoting && !isLoading && likedSongs.length > 0 && (
-                <section style={{ 
-                    width: "100%", 
-                    height: "100vh", 
-                    display: "flex", 
-                    justifyContent: "center", 
-                    alignItems: "center",
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    zIndex: 10
-                }}>
                     <PlaylistBuilder 
                         likedSongs={likedSongs} 
                         dislikedSongs={dislikedSongs} 
@@ -150,12 +142,20 @@ export default function MapClientWrapper() {
                         userToken={accessToken}
                         onPlaylistCreated={(playlist) => {
                             console.log("Playlist created:", playlist);
-                            // Optionally reset after playlist creation
-                            // setLikedSongs([]);
-                            // setDislikedSongs([]);
+                            // Reset states and return to main map
+                            setIsVoting(false);
+                            setLikedSongs([]);
+                            setDislikedSongs([]);
+                            setCountry(null);
+                        }}
+                        onBackToMap={() => {
+                            // Reset all states and return to main map browsing
+                            setIsVoting(false);
+                            setLikedSongs([]);
+                            setDislikedSongs([]);
+                            setCountry(null);
                         }}
                     />
-                </section>
             )}
 
             <MapRender onCountryChange={(c) => {
