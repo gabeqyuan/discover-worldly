@@ -43,12 +43,20 @@ export default function MapClientWrapper() {
         
         let mounted = true;
         
+        console.log("country updated")
         // Build URL with optional user token for better access
         let url = `http://localhost:3000/api/spotify/country-tracks?countryCode=${country}`;
+        console.log("url: ", url);
         if (accessToken && typeof(accessToken) === "string") {
             console.log(accessToken);
             url += `?&userToken=${encodeURIComponent(accessToken)}`;
         } else {
+            console.log("accessToken not valid");
+            if (accessToken) {
+                console.log(accessToken);
+            } else {
+                console.log("no access token");
+            }
             url += `?&userToken=${null}`;
         }
 
