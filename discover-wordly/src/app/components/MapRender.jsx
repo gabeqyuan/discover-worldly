@@ -29,9 +29,21 @@ export default function MapRender({ onCountryChange }) {
                     throw new Error('Failed to fetch country');
                 }
                 const reverse_geocoding = await response.json();
-                const country = reverse_geocoding.features[reverse_geocoding.features.length - 1].properties.context.country.country_code;
+                
+                // Check if the response has the expected structure
+                if (!reverse_geocoding?.features || reverse_geocoding.features.length === 0) {
+                    console.warn('No features found in geocoding response');
+                    return;
+                }
 
-                if (typeof onCountryChange === 'function') onCountryChange(country);
+                const lastFeature = reverse_geocoding.features[reverse_geocoding.features.length - 1];
+                const country = lastFeature?.properties?.context?.country?.country_code;
+
+                if (country && typeof onCountryChange === 'function') {
+                    onCountryChange(country);
+                } else {
+                    console.warn('Country code not found in geocoding response', lastFeature);
+                }
             } catch (error) {
                 console.error('Error fetching countries:', error);
             }
