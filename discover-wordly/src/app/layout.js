@@ -18,7 +18,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata = {
-  title: "discover-wordly",
+  title: "DiscoverWorldly",
   description: "HackHarvard 2025 Project",
 };
 
