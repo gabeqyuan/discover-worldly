@@ -54,7 +54,7 @@ export async function exchangeCodeForToken(code) {
         client_id: CLIENT_ID,
         response_type: 'code',
         redirect_uri: REDIRECT_URI,
-        scope: 'user-read-private user-read-email',
+        scope: 'user-read-private user-read-email playlist-modify-public playlist-modify-private',
         state: state,
         show_dialog: true
     });
