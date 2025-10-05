@@ -63,7 +63,8 @@ export default function PlaylistModal({
           zIndex: 1000,
           padding: "20px",
           backdropFilter: "blur(4px)",
-          overflowY: "auto"
+          overflowY: "auto",
+          minHeight: "100vh"
         }}
         onClick={onClose}
       >
@@ -77,13 +78,14 @@ export default function PlaylistModal({
             borderRadius: "24px",
             maxWidth: "700px",
             width: "100%",
-            maxHeight: "85vh",
+            maxHeight: "80vh",
             overflow: "hidden",
             boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
             border: "1px solid rgba(255,255,255,0.08)",
             color: "#fff",
-            margin: "auto",
-            alignSelf: "center"
+            position: "relative",
+            transform: "translateY(0)",
+            margin: "auto"
           }}
           onClick={e => e.stopPropagation()}
         >
@@ -398,32 +400,32 @@ export default function PlaylistModal({
                 onClick={handleCreatePlaylist}
                 disabled={isCreating || !playlistName.trim()}
                 style={{
-                  padding: "12px 28px",
+                  padding: "14px 32px",
                   backgroundColor: isCreating || !playlistName.trim() ? "#9ca3af" : "#059669",
                   color: "white",
-                  borderRadius: "10px",
+                  borderRadius: "12px",
                   border: "none",
                   cursor: isCreating || !playlistName.trim() ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  fontWeight: "600",
-                  fontSize: "14px",
-                  boxShadow: isCreating || !playlistName.trim() ? "none" : "0 4px 12px rgba(5, 150, 105, 0.25)",
+                  fontWeight: "700",
+                  fontSize: "16px",
+                  boxShadow: isCreating || !playlistName.trim() ? "none" : "0 6px 20px rgba(5, 150, 105, 0.4)",
                   transition: "all 0.2s ease"
                 }}
                 onMouseEnter={(e) => {
                   if (!isCreating && playlistName.trim()) {
                     e.target.style.backgroundColor = "#047857";
-                    e.target.style.transform = "translateY(-1px)";
-                    e.target.style.boxShadow = "0 6px 16px rgba(5, 150, 105, 0.35)";
+                    e.target.style.transform = "translateY(-2px) scale(1.02)";
+                    e.target.style.boxShadow = "0 8px 25px rgba(5, 150, 105, 0.5)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isCreating && playlistName.trim()) {
                     e.target.style.backgroundColor = "#059669";
-                    e.target.style.transform = "translateY(0px)";
-                    e.target.style.boxShadow = "0 4px 12px rgba(5, 150, 105, 0.25)";
+                    e.target.style.transform = "translateY(0px) scale(1)";
+                    e.target.style.boxShadow = "0 6px 20px rgba(5, 150, 105, 0.4)";
                   }
                 }}
               >
@@ -442,7 +444,7 @@ export default function PlaylistModal({
                 ) : (
                   <>
                     <span>🎵</span>
-                    <span>Add to Spotify</span>
+                    <span>Create Playlist</span>
                   </>
                 )}
               </button>
