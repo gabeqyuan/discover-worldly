@@ -156,6 +156,7 @@ export async function GET(req) {
 
   try {
     let accessToken = userToken; // Try to use user token first
+    let authType = userToken ? "user" : "client_credentials";
 
     // If no user token provided, fall back to Client Credentials
     if (!accessToken) {
@@ -181,11 +182,46 @@ export async function GET(req) {
       accessToken = tokenData.access_token;
     }
 
-    // 🎵 Fetch playlist tracks
-    const tracksRes = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
+    // 🎵 Fetch playlist tracks (with region-aware market). If user token fails, fall back to client credentials once.
+    const buildTracksUrl = (marketCode) => {
+      const url = new URL(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`);
+      url.searchParams.set("limit", "50");
+      if (marketCode) url.searchParams.set("market", marketCode);
+      return url.toString();
+    };
+
+    const initialMarket = authType === "user" ? "from_token" : (countryCode || "US");
+    let tracksRes = await fetch(buildTracksUrl(initialMarket), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    // If we attempted with a user token and got auth error, retry once with client credentials
+    if (authType === "user" && (tracksRes.status === 401 || tracksRes.status === 403)) {
+      const tokenRes2 = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization:
+            "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
+        },
+        body: "grant_type=client_credentials",
+      });
+
+      if (!tokenRes2.ok) {
+        const text = await tokenRes2.text();
+        return NextResponse.json(
+          { error: "token_error", status: tokenRes2.status, details: text },
+          { status: 500 }
+        );
+      }
+      const tokenData2 = await tokenRes2.json();
+      accessToken = tokenData2.access_token;
+      authType = "client_credentials";
+      // Retry with a deterministic market for CC flow (use requested country or US)
+      tracksRes = await fetch(buildTracksUrl(countryCode || "US"), {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+    }
 
     if (!tracksRes.ok) {
       const text = await tracksRes.text();
@@ -211,16 +247,15 @@ export async function GET(req) {
       })
       .filter((t) => !!t.spotifyId);
 
-    // Get 10 random tracks
-    const shuffled = mapped.sort(() => 0.5 - Math.random());
-    const selectedTracks = shuffled.slice(0, 10);
+    // Deterministic Top 10 (first 10 in playlist order)
+    const selectedTracks = mapped.slice(0, 10);
 
     return NextResponse.json({
       countryCode,
       source, // "country", "continent", or "global"
       playlistId,
       tracks: selectedTracks,
-      authType: userToken ? "user" : "client_credentials", // Which auth was used
+      authType, // "user" or "client_credentials"
     });
   } catch (error) {
     console.error("Error fetching country tracks:", error);

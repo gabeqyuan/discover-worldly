@@ -63,8 +63,10 @@ export default function MapClientWrapper() {
                 setError(data.error + (data.details ? `: ${data.details}` : ""));
                 // fallback to sample tracks so UI remains usable
                 setTracks(SAMPLE_TRACKS);
+                setTrackSource("error");
             } else {
                 setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+                setTrackSource(data.source || null);
             }
         })
         .catch((err) => {
