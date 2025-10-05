@@ -80,7 +80,7 @@ export default function MapClientWrapper() {
     return (
         <div>
             {/* Show LandingPage overlay if not authenticated */}
-            {/* {!accessToken && <LandingPage />} */}
+            {!accessToken && <LandingPage />}
             
             {/* Show logout button when authenticated */}
             {accessToken && (
@@ -108,8 +108,8 @@ export default function MapClientWrapper() {
             )}
             
 
-            {/* {accessToken && isVoting && country ( */}
-            {isVoting && country && (
+            {accessToken && isVoting && country (
+            // {isVoting && country && (
                 <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck
