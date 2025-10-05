@@ -19,24 +19,6 @@ export default function MapClientWrapper() {
     const [isLoading, setLoading] = useState(false);
     const [trackSource, setTrackSource] = useState(null); // "country", "continent", or "global"
 
-    // small sample track list to pass into the SwipeDeck for testing
-    const SAMPLE_TRACKS = [
-    {
-        id: "1",
-        title: "Blinding Lights",
-        artist: "The Weeknd",
-        albumArt: "https://i.scdn.co/image/ab67616d0000b273d4f8e9b8d5a2e0f2b2c6d6d2",
-        spotifyId: "0VjIjW4GlUZAMYd2vXMi3b",
-    },
-    {
-        id: "2",
-        title: "Levitating",
-        artist: "Dua Lipa",
-        albumArt: "https://i.scdn.co/image/ab67616d0000b273c7b7f2f9b4f3b8d9a2a4b5c6",
-        spotifyId: "463CkQjx2Zk1yXoBuierM9",
-    },
-    ];
-
     // Fetch country-specific tracks when country changes
     useEffect(() => {
         if (!country) return;
@@ -74,7 +56,7 @@ export default function MapClientWrapper() {
                         console.error("Playlist not found (404). The Spotify playlist ID may be outdated or removed.");
                     }
                     // fallback to sample tracks so UI remains usable
-                    setTracks(SAMPLE_TRACKS);
+                    setTracks(null);
                 } else {
                     const newTracks = data.tracks && data.tracks.length ? data.tracks : [];
                     console.log(`[WRAPPER] Setting ${newTracks.length} tracks for ${country}. First track:`, newTracks[0]);
@@ -90,7 +72,7 @@ export default function MapClientWrapper() {
     return (
         <div>
             {/* Show LandingPage overlay if not authenticated */}
-            {/* {!accessToken && <LandingPage />} */}
+            {!accessToken && <LandingPage />}
             
             {/* Show logout button when authenticated */}
             {accessToken && (

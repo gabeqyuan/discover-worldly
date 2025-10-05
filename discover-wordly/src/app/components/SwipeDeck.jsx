@@ -36,18 +36,24 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 		// then remove it from the deck after the animation completes.
 		const [animating, setAnimating] = useState({ action: null, trackId: null });
 
-		// likedTracks persist liked songs in localStorage so likes survive page reloads.
-		const [likedTracks, setLikedTracks] = useState(() => {
-			try {
-				const raw = localStorage.getItem("likedTracks");
-				return raw ? JSON.parse(raw) : [];
-			} catch (err) {
-				return [];
-			}
-		});
+	// likedTracks persist liked songs in localStorage so likes survive page reloads.
+	// Start with empty array and load from localStorage after mount to avoid hydration mismatch
+	const [likedTracks, setLikedTracks] = useState([]);
 
 	// keep a ref to the removal timeout so we can clear if the component unmounts
 	const timeoutRef = useRef(null);
+
+	// Load liked tracks from localStorage after component mounts (client-side only)
+	useEffect(() => {
+		try {
+			const raw = localStorage.getItem("likedTracks");
+			if (raw) {
+				setLikedTracks(JSON.parse(raw));
+			}
+		} catch (error){
+			console.error(error);
+		};
+	}, []);
 
 	useEffect(() => {
 		if (typeof deckEmpty === 'function') {
@@ -181,7 +187,7 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 						<div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
 							{likedTracks.slice(0, 8).map((t, i) => (
 								<div key={`${t.spotifyId ?? t.id ?? t.title}-${i}`} style={{ width: 64, textAlign: "center" }}>
-									<img src={t.albumArt} alt={t.title} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 6 }} />
+									<img src={t?.albumArt || null} alt={t.title} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 6 }} />
 									<div style={{ fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</div>
 								</div>
 							))}

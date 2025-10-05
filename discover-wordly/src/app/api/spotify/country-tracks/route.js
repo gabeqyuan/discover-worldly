@@ -101,12 +101,12 @@ const COUNTRY_PLAYLISTS = {
 
 // Continent fallback playlists
 const CONTINENT_PLAYLISTS = {
-  "North America": "37i9dQZEVXbLRQDuF5jeBp", // USA Top 50
-  "South America": "37i9dQZEVXbMXbN3EUUhlg", // Brazil Top 50
-  Europe: "37i9dQZEVXbLnolsZ8PSNw", // UK Top 50 (Global)
-  Asia: "37i9dQZEVXbLZ52XmnySJg", // India Top 50
-  Africa: "37i9dQZEVXbMH2jvi6jvjk", // South Africa Top 50
-  Oceania: "37i9dQZEVXbJPcfkRz0wJ0", // Australia Top 50
+  "North America": "4JgPn5zouXilXoM2v1Istn",
+  "South America": "36iYF0nny5q8EpNuEVWZZF",
+  Europe: "0YlKjOoYHRP4ip32kIa549",
+  Asia: "54aDiYiCGEpQNwVSPU2RxG",
+  Africa: "5ofljPANS7OVhLqVt8b6zs",
+  Oceania: "3WBem7NkrBwqDd9CWtz6u3"
 };
 
 // Map country codes to continents
@@ -160,6 +160,60 @@ const COUNTRY_TO_CONTINENT = {
   AU: "Oceania", NZ: "Oceania", FJ: "Oceania", PG: "Oceania",
   NC: "Oceania", PF: "Oceania", WS: "Oceania", TO: "Oceania",
 };
+
+const TOP_SONGS = {
+  US: "2d4lZtxOjli4D73GfmGCFA",
+  IN: "3fqHSMwCe1j3Z91tnXmuHQ",
+  CN: "0n9pUnDvJEIavvDfGnJqJl",
+  ID: "68CsCvj1yJdzGv8Fprl7k5",
+  PK: "6BymTJF70MjeaIjEbZREfc",
+  NG: "6e1PM4vAlhabqCta00ebSg",
+  BR: "596Uy4sdomPqDeihQbEojV",
+  BD: "51rX1gOpr4X79v0Y3hQapG",
+  RU: "6qv7CRaZr9nJaamM8Xtrv6",
+  MX: "4GYEN4ZTL60fZIWyVw0uRC",
+  ET: "7dM4QqLCVFDWKNHlOtI1fB",
+  JP: "4Bsknjekv8HNfUF57ELNot",
+  PH: "3pKv7e4IED9iF7OKOogsaB",
+  EG: "6kkFwZUEpEmE9NKjmawsNE",
+  VN: "6tU1cBMEBs16AcqqzvNXar",
+  CD: "1QMQPceQE2evCvFZBEhTKf",
+  IR: "6t7RxmqHXhqgGjqcU8A5zD",
+  TR: "2ShGT3Q36INUC5cRyCMW8d",
+  DE: "0KwsbLDSEy7A5P9xHn1qGu",
+  TH: "5ITXdARLNLeuN5JmT2eCwb",
+  GB: "2hOekbRxaOqrqBWqlY5gaB",
+  FR: "2IgPkhcHbgQ4s4PdCxljAx",
+  IT: "6YY4TwrvBGdnLp1XQEfhTJ",
+  TZ: "5cmulzRnTs9d1Nlh3XFsKA",
+  ZA: "36iYF0nny5q8EpNuEVWZZF",
+  MM: "4J8TwKa2p6irrJ1PM4hvNg",
+  KE: "2Z26gAgauS8LNM0a6mgxob",
+  KR: "4KJCOntsptolLYjUhTcNjv",
+  CO: "5bULIS1NivSjkOasIHWdVS",
+
+  ES: "",
+  UG: "",
+  AR: "",
+  DZ: "",
+  SD: "",
+  UA: "",
+  IQ: "",
+  AF: "",
+  PL: "",
+  CA: "",
+  MA: "",
+  SA: "",
+  UZ: "",
+  PE: "",
+  AO: "",
+  MY: "",
+  MZ: "",
+  GH: "",
+  YE: "",
+  NP: "",
+  VE: ""
+}
 
 // GET /api/spotify/country-tracks?countryCode=US&userToken=...
 export async function GET(req) {
@@ -366,11 +420,10 @@ export async function GET(req) {
 
     // Get 10 random tracks
     const shuffled = mapped.sort(() => 0.5 - Math.random());
-    const selectedTracks = shuffled.slice(0, 10);
+    const selectedTracks = shuffled.slice(0, 6);
 
     return NextResponse.json({
       countryCode,
-      source, // "country", "continent", or "global"
       playlistId,
       tracks: selectedTracks,
       authType: userToken ? "user" : "client_credentials", // Which auth was used
