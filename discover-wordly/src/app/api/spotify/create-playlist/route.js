@@ -3,8 +3,16 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   try {
     const { name, description, tracks, userToken } = await req.json();
+    
+    console.log('[CREATE-PLAYLIST-API] Request received:', { 
+      name, 
+      description, 
+      tracksCount: tracks?.length, 
+      hasUserToken: !!userToken 
+    });
 
     if (!userToken) {
+      console.log('[CREATE-PLAYLIST-API] No user token provided');
       return NextResponse.json(
         { error: "User token is required" },
         { status: 401 }
@@ -12,6 +20,7 @@ export async function POST(req) {
     }
 
     if (!name || !tracks || tracks.length === 0) {
+      console.log('[CREATE-PLAYLIST-API] Missing name or tracks:', { name, tracksCount: tracks?.length });
       return NextResponse.json(
         { error: "Playlist name and tracks are required" },
         { status: 400 }

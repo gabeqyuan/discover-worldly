@@ -32,16 +32,23 @@ export default function PlaylistModal({
   if (!isOpen || !recommendations) return null;
 
   const handleCreatePlaylist = () => {
+    console.log('[PLAYLIST-MODAL] Create playlist clicked');
+    console.log('[PLAYLIST-MODAL] Playlist name:', playlistName);
+    console.log('[PLAYLIST-MODAL] Recommendations:', recommendations);
+    
     if (!playlistName.trim()) {
       alert("Please enter a playlist name");
       return;
     }
     
-    onCreatePlaylist({
+    const playlistData = {
       name: playlistName.trim(),
       description: playlistDescription.trim(),
       tracks: recommendations
-    });
+    };
+    
+    console.log('[PLAYLIST-MODAL] Sending playlist data:', playlistData);
+    onCreatePlaylist(playlistData);
   };
 
   return (
@@ -86,7 +93,7 @@ export default function PlaylistModal({
         >
           {/* Header */}
           <div style={{
-            padding: "24px 32px",
+            padding: "16px 24px",
             background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
             borderBottom: "1px solid rgba(255,255,255,0.08)",
             color: "white",
@@ -96,13 +103,13 @@ export default function PlaylistModal({
           }}>
             <div>
               <h2 style={{
-                fontSize: "24px",
+                fontSize: "20px",
                 fontWeight: "600",
                 color: "white",
                 margin: 0,
                 display: "flex",
                 alignItems: "center",
-                gap: "8px"
+                gap: "6px"
               }}>
                 <span style={{ fontSize: "20px" }}>🎵</span>
                 Your AI Playlist
@@ -400,6 +407,7 @@ export default function PlaylistModal({
               <button
                 onClick={handleCreatePlaylist}
                 disabled={isCreating || !playlistName.trim()}
+                title={`Button state: ${isCreating ? 'Creating...' : !playlistName.trim() ? 'Enter a name' : 'Ready to create'}`}
                 style={{
                   padding: "14px 32px",
                   backgroundColor: isCreating || !playlistName.trim() ? "#9ca3af" : "#059669",

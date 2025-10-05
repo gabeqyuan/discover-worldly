@@ -89,7 +89,11 @@ export default function PlaylistBuilder({
   };
 
   const handleCreatePlaylist = async (playlistData) => {
+    console.log('[PLAYLIST-BUILDER] Creating playlist with data:', playlistData);
+    console.log('[PLAYLIST-BUILDER] UserToken exists:', !!userToken);
+    
     if (!userToken) {
+      console.error('[PLAYLIST-BUILDER] No user token available');
       setError("You need to be logged in to create a playlist");
       return;
     }
@@ -109,13 +113,17 @@ export default function PlaylistBuilder({
         }),
       });
 
+      console.log('[PLAYLIST-BUILDER] API Response status:', response.status);
       const data = await response.json();
+      console.log('[PLAYLIST-BUILDER] API Response data:', data);
 
       if (!response.ok) {
+        console.error('[PLAYLIST-BUILDER] API Error:', data);
         throw new Error(data.error || 'Failed to create playlist');
       }
 
       // Success! Close modal and notify parent
+      console.log('[PLAYLIST-BUILDER] Playlist created successfully:', data.playlist);
       setShowModal(false);
       if (onPlaylistCreated) {
         onPlaylistCreated(data.playlist);
@@ -125,7 +133,7 @@ export default function PlaylistBuilder({
       alert(`Playlist "${data.playlist.name}" created successfully! ${data.playlist.tracksAdded} tracks were added to your Spotify library.`);
 
     } catch (err) {
-      console.error('Playlist creation error:', err);
+      console.error('[PLAYLIST-BUILDER] Playlist creation error:', err);
       setError(err.message || 'Failed to create playlist. Please try again.');
     } finally {
       setIsCreatingPlaylist(false);
@@ -199,8 +207,7 @@ export default function PlaylistBuilder({
             e.target.style.color = "rgba(255,255,255,0.7)";
           }}
         >
-          <span>←</span>
-          <span>Back</span>
+          ×
         </button>
         <div style={{ textAlign: "center" }}>
           <h3 style={{
