@@ -44,33 +44,31 @@ export default function MapClientWrapper() {
         let mounted = true;
         
         // Build URL with optional user token for better access
-        let url = `http://localhost:3000/api/spotify/country-tracks?countryCode=${country}`;
+        let url = `/api/spotify/country-tracks?countryCode=${country}`;
         if (accessToken) {
-            url += `?&userToken=${encodeURIComponent(accessToken)}`;
-        } else {
-            url += `?&userToken=${null}`;
+            url += `&userToken=${encodeURIComponent(accessToken)}`;
         }
 
-        try {
-            fetch(url)
-                .then((r) => r.json())
-                .then((data) => {
-                    if (!mounted) return;
-                    console.debug("/api/spotify/country-tracks ->", data);
-    
-                    if (data && data.error) {
-                        // fallback to sample tracks so UI remains usable
-                        setTracks(SAMPLE_TRACKS);
-                    } else {
-                        setTracks(data.tracks && data.tracks.length ? data.tracks : []);
-                    }
-                });
-        } catch (err) {
-            console.error("Failed to fetch playlist", err);
-            if (mounted) {
-                setTracks(SAMPLE_TRACKS);
-            }
-        }
+        fetch(url)
+            .then((r) => r.json())
+            .then((data) => {
+                if (!mounted) return;
+                console.debug("/api/spotify/country-tracks ->", data);
+
+                if (data && data.error) {
+                    console.error("API Error:", data.error);
+                    // fallback to sample tracks so UI remains usable
+                    setTracks(SAMPLE_TRACKS);
+                } else {
+                    setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+                }
+            })
+            .catch((err) => {
+                console.error("Failed to fetch playlist", err);
+                if (mounted) {
+                    setTracks(SAMPLE_TRACKS);
+                }
+            });
 
         return () => {
             mounted = false;
@@ -108,8 +106,7 @@ export default function MapClientWrapper() {
             )}
             
 
-            {accessToken && isVoting && country (
-            // {isVoting && country && (
+            {accessToken && isVoting && country && (
                 <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck
