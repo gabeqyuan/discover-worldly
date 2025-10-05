@@ -1,142 +1,264 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from "react";
+import PlaylistModal from "./PlaylistModal";
 
-export default function PlaylistBuilder({ likedSongs, dislikedSongs, responseMsg, isGenerating }) {
-    console.log('building playlist');
-  const { accessToken, profile } = useAuth();
+export default function PlaylistBuilder({ 
+  likedSongs = [], 
+  dislikedSongs = [], 
+  countryCode,
+  userToken,
+  onPlaylistCreated 
+}) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [recommendations, setRecommendations] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+  const [error, setError] = useState(null);
 
-  const generateAndCreatePlaylist = async () => {
-    if (!accessToken || !profile) {
-      setError('You must be logged in to create a playlist');
+  const generatePlaylist = async () => {
+    if (!likedSongs || likedSongs.length === 0) {
+      setError("You need to like at least one song to generate a playlist!");
       return;
     }
 
-    if (likedSongs.length === 0) {
-      setError('Please like at least one song to generate a playlist');
-      return;
-    }
-
-    isGenerating(true);
+    setIsGenerating(true);
+    setError(null);
 
     try {
-      // Step 1: Call the generate-playlist API
-      const generateResponse = await fetch('/api/generate-playlist', {
+      console.log('[PLAYLIST-BUILDER] Starting playlist generation...', {
+        likedCount: likedSongs.length,
+        dislikedCount: dislikedSongs.length,
+        countryCode,
+        hasToken: !!userToken
+      });
+
+      const response = await fetch('/api/generate-playlist', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          likedSongs: likedSongs.map(song => `${song.title} by ${song.artist}`),
-          dislikedSongs: dislikedSongs.map(song => `${song.title} by ${song.artist}`),
+          likedSongs,
+          dislikedSongs,
+          countryCode,
+          userToken
         }),
       });
 
-      if (!generateResponse.ok) {
-        throw new Error('Failed to generate playlist recommendations');
+      const data = await response.json();
+      console.log('[PLAYLIST-BUILDER] API response:', { 
+        ok: response.ok, 
+        status: response.status, 
+        dataKeys: Object.keys(data) 
+      });
+
+      if (!response.ok) {
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+        throw new Error(errorMsg || 'Failed to generate playlist');
       }
 
-      const { recommendations } = await generateResponse.json();
-      
-      // Parse the recommendations (assuming it returns a JSON-style list)
-      let songList;
-      try {
-        songList = JSON.parse(recommendations);
-      } catch {
-        // If parsing fails, try to extract song names from text
-        const match = recommendations.match(/\[(.*)\]/s);
-        if (match) {
-          songList = match[1].split(',').map(s => s.trim().replace(/['"]/g, ''));
-        } else {
-          throw new Error('Could not parse recommendations');
-        }
+      if (!data.recommendations || !Array.isArray(data.recommendations)) {
+        throw new Error('Invalid response format from AI service');
       }
 
-      // Step 2: Search for each song on Spotify to get track URIs
-      const trackUris = [];
-      for (const songName of songList) {
-        try {
-          const searchResponse = await fetch(
-            `https://api.spotify.com/v1/search?q=${encodeURIComponent(songName)}&type=track&limit=1`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }
-          );
-
-          if (searchResponse.ok) {
-            const searchData = await searchResponse.json();
-            if (searchData.tracks.items.length > 0) {
-              trackUris.push(searchData.tracks.items[0].uri);
-            }
-          }
-        } catch (err) {
-          console.warn(`Could not find track: ${songName}`, err);
-        }
-      }
-
-      if (trackUris.length === 0) {
-        throw new Error('No tracks could be found on Spotify');
-      }
-
-
-      // Step 3: Create a new playlist in the user's account
-      const createPlaylistResponse = await fetch(
-        `https://api.spotify.com/v1/users/${profile.id}/playlists`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: `Discover ${countryName} - ${new Date().toLocaleDateString()}`,
-            description: `Generated playlist based on your music preferences from ${countryName}`,
-            public: false,
-          }),
-        }
-      );
-
-      if (!createPlaylistResponse.ok) {
-        const errorData = await createPlaylistResponse.json();
-        throw new Error(errorData.error?.message || 'Failed to create playlist');
-      }
-
-      const playlist = await createPlaylistResponse.json();
-
-      // Step 4: Add tracks to the playlist
-      
-      const addTracksResponse = await fetch(
-        `https://api.spotify.com/v1/playlists/${playlist.id}/tracks`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            uris: trackUris,
-          }),
-        }
-      );
-
-      if (!addTracksResponse.ok) {
-        throw new Error('Failed to add tracks to playlist');
-      }
-
-      setPlaylistUrl(playlist.external_urls.spotify);
-      
+      console.log('[PLAYLIST-BUILDER] Successfully generated', data.recommendations.length, 'recommendations');
+      setRecommendations(data.recommendations);
+      setShowModal(true);
     } catch (err) {
-      console.error('Error creating playlist:', err);
-      setError(err.message || 'An error occurred while creating the playlist');
+      console.error('Playlist generation error:', err);
+      
+      // Provide more user-friendly error messages
+      let userMessage = 'Failed to generate playlist. Please try again.';
+      
+      if (err.message.includes('GEMINI_API_KEY')) {
+        userMessage = 'AI service is not configured. Please contact support.';
+      } else if (err.message.includes('parse')) {
+        userMessage = 'AI service returned invalid data. Please try again.';
+      } else if (err.message.includes('network') || err.message.includes('fetch')) {
+        userMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message.length > 0) {
+        userMessage = err.message;
+      }
+      
+      setError(userMessage);
     } finally {
-      isGenerating(false);
+      setIsGenerating(false);
     }
   };
 
+  const handleCreatePlaylist = async (playlistData) => {
+    if (!userToken) {
+      setError("You need to be logged in to create a playlist");
+      return;
+    }
+
+    setIsCreatingPlaylist(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/spotify/create-playlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...playlistData,
+          userToken
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create playlist');
+      }
+
+      // Success! Close modal and notify parent
+      setShowModal(false);
+      if (onPlaylistCreated) {
+        onPlaylistCreated(data.playlist);
+      }
+
+      // Show success message
+      alert(`Playlist "${data.playlist.name}" created successfully! ${data.playlist.tracksAdded} tracks were added to your Spotify library.`);
+
+    } catch (err) {
+      console.error('Playlist creation error:', err);
+      setError(err.message || 'Failed to create playlist. Please try again.');
+    } finally {
+      setIsCreatingPlaylist(false);
+    }
+  };
+
+  const canGenerate = likedSongs && likedSongs.length > 0;
+
   return (
-    <></>
-  )
+    <div className="playlist-builder">
+      {/* Generate Playlist Button */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "16px",
+        padding: "24px",
+        background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
+        borderRadius: "24px",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        color: "#fff"
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <h3 style={{
+            fontSize: "18px",
+            fontWeight: "600",
+            color: "#fff",
+            marginBottom: "8px",
+            margin: "0 0 8px 0"
+          }}>
+            Create Your Personalized Playlist
+          </h3>
+          <p style={{
+            fontSize: "14px",
+            color: "rgba(255,255,255,0.7)",
+            marginBottom: "16px",
+            margin: "0 0 16px 0"
+          }}>
+            {likedSongs.length > 0 
+              ? `Based on ${likedSongs.length} liked song${likedSongs.length === 1 ? '' : 's'}${dislikedSongs.length > 0 ? ` and ${dislikedSongs.length} disliked` : ''}`
+              : "Like some songs first to generate a personalized playlist"
+            }
+          </p>
+        </div>
+
+        {error && (
+          <div style={{
+            width: "100%",
+            padding: "12px",
+            backgroundColor: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+            color: "#fca5a5",
+            borderRadius: "10px",
+            fontSize: "14px"
+          }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          onClick={generatePlaylist}
+          disabled={!canGenerate || isGenerating}
+          style={{
+            padding: "14px 28px",
+            backgroundColor: (!canGenerate || isGenerating) ? "#9ca3af" : "#059669",
+            color: "white",
+            borderRadius: "12px",
+            fontWeight: "600",
+            border: "none",
+            cursor: (!canGenerate || isGenerating) ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontSize: "16px",
+            boxShadow: (!canGenerate || isGenerating) ? "none" : "0 6px 20px rgba(5, 150, 105, 0.4)",
+            transition: "all 0.2s ease"
+          }}
+          onMouseEnter={(e) => {
+            if (canGenerate && !isGenerating) {
+              e.target.style.backgroundColor = "#047857";
+              e.target.style.transform = "translateY(-2px) scale(1.02)";
+              e.target.style.boxShadow = "0 8px 25px rgba(5, 150, 105, 0.5)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (canGenerate && !isGenerating) {
+              e.target.style.backgroundColor = "#059669";
+              e.target.style.transform = "translateY(0px) scale(1)";
+              e.target.style.boxShadow = "0 6px 20px rgba(5, 150, 105, 0.4)";
+            }
+          }}
+        >
+          {isGenerating ? (
+            <>
+              <div style={{
+                width: "20px",
+                height: "20px",
+                border: "2px solid transparent",
+                borderTop: "2px solid white",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite"
+              }}></div>
+              <span>Generating with AI...</span>
+            </>
+          ) : (
+            <>
+              <span>🎵</span>
+              <span>Generate AI Playlist</span>
+            </>
+          )}
+        </button>
+
+        {!canGenerate && (
+          <p style={{
+            fontSize: "12px",
+            color: "rgba(255,255,255,0.5)",
+            textAlign: "center",
+            margin: 0
+          }}>
+            Swipe right on songs you like to enable playlist generation
+          </p>
+        )}
+      </div>
+
+      {/* Playlist Modal */}
+      <PlaylistModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        recommendations={recommendations}
+        onCreatePlaylist={handleCreatePlaylist}
+        isCreating={isCreatingPlaylist}
+        countryCode={countryCode}
+      />
+    </div>
+  );
 }

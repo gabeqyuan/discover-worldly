@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.22.0",
+    "@google/generative-ai": "^0.24.1",
     "@lottiefiles/dotlottie-react": "^0.17.4",
     "framer-motion": "^12.23.22",
     "lucide-react": "^0.544.0",
