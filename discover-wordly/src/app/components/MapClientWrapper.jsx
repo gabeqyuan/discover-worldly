@@ -72,7 +72,7 @@ export default function MapClientWrapper() {
     return (
         <div>
             {/* Show LandingPage overlay if not authenticated */}
-            {!accessToken && <LandingPage />}
+            {/* {!accessToken && <LandingPage />} */}
             
             {/* Show logout button when authenticated */}
             {accessToken && (
