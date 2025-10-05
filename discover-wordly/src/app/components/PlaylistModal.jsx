@@ -60,7 +60,7 @@ export default function PlaylistModal({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 1000,
+          zIndex: 1100,
           padding: "20px",
           backdropFilter: "blur(4px)"
         }}

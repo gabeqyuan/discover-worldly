@@ -134,23 +134,42 @@ export default function PlaylistBuilder({
   const canGenerate = likedSongs && likedSongs.length > 0;
 
   return (
-    <div className="playlist-builder">
-      {/* Generate Playlist Button */}
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "16px",
-        padding: "24px",
-        backgroundColor: "white",
-        borderRadius: "8px",
-        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
-      }}>
+    <div className="playlist-builder" style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0, 0, 0, 0.75)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "20px",
+      backdropFilter: "blur(4px)"
+    }}>
+      {/* Generate Playlist Button - Hide when modal is open */}
+      {!showModal && (
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "16px",
+          padding: "32px",
+          background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
+          borderRadius: "24px",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          maxWidth: "500px",
+          width: "100%",
+          position: "relative",
+          color: "#fff"
+        }}>
         <div style={{ textAlign: "center" }}>
           <h3 style={{
             fontSize: "18px",
             fontWeight: "600",
-            color: "#111827",
+            color: "#fff",
             marginBottom: "8px",
             margin: "0 0 8px 0"
           }}>
@@ -158,7 +177,7 @@ export default function PlaylistBuilder({
           </h3>
           <p style={{
             fontSize: "14px",
-            color: "#6b7280",
+            color: "rgba(255,255,255,0.7)",
             marginBottom: "16px",
             margin: "0 0 16px 0"
           }}>
@@ -173,10 +192,10 @@ export default function PlaylistBuilder({
           <div style={{
             width: "100%",
             padding: "12px",
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fca5a5",
-            color: "#dc2626",
-            borderRadius: "6px",
+            backgroundColor: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+            color: "#fca5a5",
+            borderRadius: "10px",
             fontSize: "14px"
           }}>
             {error}
@@ -187,16 +206,33 @@ export default function PlaylistBuilder({
           onClick={generatePlaylist}
           disabled={!canGenerate || isGenerating}
           style={{
-            padding: "12px 24px",
+            padding: "14px 28px",
             backgroundColor: (!canGenerate || isGenerating) ? "#9ca3af" : "#059669",
             color: "white",
-            borderRadius: "8px",
-            fontWeight: "500",
+            borderRadius: "12px",
+            fontWeight: "600",
             border: "none",
             cursor: (!canGenerate || isGenerating) ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
-            gap: "8px"
+            gap: "10px",
+            fontSize: "16px",
+            boxShadow: (!canGenerate || isGenerating) ? "none" : "0 6px 20px rgba(5, 150, 105, 0.4)",
+            transition: "all 0.2s ease"
+          }}
+          onMouseEnter={(e) => {
+            if (canGenerate && !isGenerating) {
+              e.target.style.backgroundColor = "#047857";
+              e.target.style.transform = "translateY(-2px) scale(1.02)";
+              e.target.style.boxShadow = "0 8px 25px rgba(5, 150, 105, 0.5)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (canGenerate && !isGenerating) {
+              e.target.style.backgroundColor = "#059669";
+              e.target.style.transform = "translateY(0px) scale(1)";
+              e.target.style.boxShadow = "0 6px 20px rgba(5, 150, 105, 0.4)";
+            }
           }}
         >
           {isGenerating ? (
@@ -222,14 +258,15 @@ export default function PlaylistBuilder({
         {!canGenerate && (
           <p style={{
             fontSize: "12px",
-            color: "#6b7280",
+            color: "rgba(255,255,255,0.5)",
             textAlign: "center",
             margin: 0
           }}>
             Swipe right on songs you like to enable playlist generation
           </p>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Playlist Modal */}
       <PlaylistModal
