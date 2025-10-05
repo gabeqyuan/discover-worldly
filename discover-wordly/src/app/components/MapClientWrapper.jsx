@@ -41,17 +41,29 @@ export default function MapClientWrapper() {
     useEffect(() => {
         if (!country) return;
         
-        console.log("country updated")
-        // Build URL with optional user token for better access
-        let url = `/api/spotify/country-tracks?countryCode=${country}`;
+        console.log(`[WRAPPER] Country changed to: ${country}`);
+        
+        // Immediately clear tracks to force SwipeDeck remount
+        setTracks([]);
+        
+        // Build URL with cache-busting timestamp
+        let url = `/api/spotify/country-tracks?countryCode=${country}&t=${Date.now()}`;
         if (accessToken) {
             url += `&userToken=${encodeURIComponent(accessToken)}`;
         }
 
-        fetch(url)
+        console.log(`[WRAPPER] Fetching: ${url}`);
+
+        fetch(url, {
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            }
+        })
             .then((r) => r.json())
             .then((data) => {
-                console.debug("/api/spotify/country-tracks ->", data);
+                console.log(`[WRAPPER] API Response for ${country}:`, data);
 
                 if (data && data.error) {
                     console.error("API Error:", data.error);
@@ -64,18 +76,15 @@ export default function MapClientWrapper() {
                     // fallback to sample tracks so UI remains usable
                     setTracks(SAMPLE_TRACKS);
                 } else {
-                    console.log('data', data);
-                    setTracks(data.tracks && data.tracks.length ? data.tracks : []);
+                    const newTracks = data.tracks && data.tracks.length ? data.tracks : [];
+                    console.log(`[WRAPPER] Setting ${newTracks.length} tracks for ${country}. First track:`, newTracks[0]);
+                    setTracks(newTracks);
                 }
             })
             .catch((err) => {
                 console.error("Failed to fetch playlist", err);
                 setTracks(SAMPLE_TRACKS);
             });
-
-        return () => {
-            mounted = false;
-        };
     }, [country]);
 
     return (
@@ -109,11 +118,12 @@ export default function MapClientWrapper() {
             )}
             
 
-            { isVoting && tracks && (
+            { isVoting && tracks && tracks.length > 0 && (
                 <section style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck
-                            tracks={tracks || SAMPLE_TRACKS}
+                            key={`${country}-${tracks[0]?.spotifyId || 'loading'}`} // Force remount with unique key
+                            tracks={tracks}
                             onLike={(t) => {
                                 console.log("Liked", t);
                                 setLikedSongs((prev) => [...prev, t]);

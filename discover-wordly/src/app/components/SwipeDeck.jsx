@@ -27,11 +27,12 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 		},
 	];
 
-		// Maintain the list of remaining cards in state so we can remove the top card on swipe.
-		// Initialize from `tracks` prop when available, otherwise fall back to sampleTracks.
-		const [cards, setCards] = useState(tracks && tracks.length ? tracks : sampleTracks);
-
-		// animating state: when a card is liked/skipped we animate it off-screen first,
+	// Maintain the list of remaining cards in state so we can remove the top card on swipe.
+	// Initialize from `tracks` prop when available, otherwise fall back to sampleTracks.
+	const [cards, setCards] = useState(() => {
+		console.log(`[SWIPEDECK] Initializing with ${tracks?.length || 0} tracks`);
+		return tracks && tracks.length ? tracks : sampleTracks;
+	});		// animating state: when a card is liked/skipped we animate it off-screen first,
 		// then remove it from the deck after the animation completes.
 		const [animating, setAnimating] = useState({ action: null, trackId: null });
 
@@ -45,16 +46,14 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 			}
 		});
 
-		// keep a ref to the removal timeout so we can clear if the component unmounts
-		const timeoutRef = useRef(null);
+	// keep a ref to the removal timeout so we can clear if the component unmounts
+	const timeoutRef = useRef(null);
 
-		useEffect(() => {
-			if (typeof deckEmpty === 'function') {
-				deckEmpty(!cards || cards.length === 0);
-			}
-		}, [cards]);
-
-		// handleAction: trigger animation and schedule removal + callback
+	useEffect(() => {
+		if (typeof deckEmpty === 'function') {
+			deckEmpty(!cards || cards.length === 0);
+		}
+	}, [cards]);		// handleAction: trigger animation and schedule removal + callback
 		const handleAction = useCallback(
 			(action, track) => {
 				// ignore if already animating a card
@@ -116,6 +115,8 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 						.slice(0, 3) // show up to 3 cards stacked for visual depth
 						.reverse()
 						.map((track, idx) => {
+							// Compute position in the original cards array for stable key
+							const cardIndex = cards.indexOf(track);
 							// compute a simple offset for stacked look (bottom card offset is larger)
 							const offset = idx * 8;
 							const zIndex = 10 + idx;
@@ -132,14 +133,14 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 
 							return (
 								<div
-									key={`${track.spotifyId ?? track.id ?? track.title}-${idx}`}
+									key={track.spotifyId ?? track.id ?? track.title}
 									style={{
 										position: "absolute",
-										left: offset,
-										top: offset,
+										left: 0,
+										top: 0,
 										zIndex,
 										transition: isTop ? "transform 420ms ease-out" : "none",
-										transform: transformStyle,
+										transform: transformStyle || `translate(${offset}px, ${offset}px)`,
 									}}
 								>
 									{/*
