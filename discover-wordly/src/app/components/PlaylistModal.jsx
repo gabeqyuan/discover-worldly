@@ -60,7 +60,7 @@ export default function PlaylistModal({
 
   return (
     <AnimatePresence>
-      <motion.div
+      <div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -70,17 +70,17 @@ export default function PlaylistModal({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
+          backgroundColor: "rgba(255, 0, 0, 0.8)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 1100,
+          zIndex: 9999,
           padding: "20px",
           backdropFilter: "blur(2px)"
         }}
         onClick={onClose}
       >
-        <motion.div
+        <div
           initial={{ scale: 0.8, opacity: 0, y: 50 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.8, opacity: 0, y: 50 }}
@@ -466,8 +466,8 @@ export default function PlaylistModal({
               </button>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </AnimatePresence>
   );
 }
