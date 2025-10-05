@@ -58,9 +58,16 @@ export default function MapClientWrapper() {
 
                 if (data && data.error) {
                     console.error("API Error:", data.error);
+                    if (data.playlistId) {
+                        console.error(`Failed playlist ID: ${data.playlistId} (Country: ${data.countryCode}, Source: ${data.source})`);
+                    }
+                    if (data.status === 404) {
+                        console.error("Playlist not found (404). The Spotify playlist ID may be outdated or removed.");
+                    }
                     // fallback to sample tracks so UI remains usable
                     setTracks(SAMPLE_TRACKS);
                 } else {
+                    console.log('data', data);
                     setTracks(data.tracks && data.tracks.length ? data.tracks : []);
                 }
             })
@@ -79,7 +86,7 @@ export default function MapClientWrapper() {
     return (
         <div>
             {/* Show LandingPage overlay if not authenticated */}
-            {!accessToken && <LandingPage />}
+            {/* {!accessToken && <LandingPage />} */}
             
             {/* Show logout button when authenticated */}
             {accessToken && (
@@ -107,7 +114,7 @@ export default function MapClientWrapper() {
             )}
             
 
-            {accessToken && isVoting && country && (
+            { isVoting && country && (
                 <section style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck

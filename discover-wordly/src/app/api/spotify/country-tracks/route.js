@@ -106,6 +106,8 @@ const COUNTRY_TO_CONTINENT = {
   MA: "Africa", DZ: "Africa", TN: "Africa", LY: "Africa",
   SD: "Africa", AO: "Africa", MZ: "Africa", ZW: "Africa",
   CI: "Africa", CM: "Africa", SN: "Africa", ML: "Africa",
+  NE: "Africa", BF: "Africa", TD: "Africa", BJ: "Africa",
+  RW: "Africa", SO: "Africa", MW: "Africa", ZM: "Africa",
   
   // Oceania
   AU: "Oceania", NZ: "Oceania", FJ: "Oceania", PG: "Oceania",
@@ -127,7 +129,9 @@ export async function GET(req) {
   }
 
   // Determine which playlist to use
-  let playlistId = COUNTRY_PLAYLISTS[countryCode];
+  // let playlistId = COUNTRY_PLAYLISTS[countryCode];
+  let playlistId = "37vVbInEzfnXJQjVuU7bAZ";
+
   let source = "country";
 
   // If no country-specific playlist, fall back to continent
@@ -141,7 +145,7 @@ export async function GET(req) {
 
   // If still no playlist, use global top 50
   if (!playlistId) {
-    playlistId = "37i9dQZF1DXcBWIGoYBM5M"; // Today's Top Hits (Global)
+    playlistId = "37vVbInEzfnXJQjVuU7bAZ"; // Global Top 50 (Valid as of 2024+)
     source = "global";
   }
 
