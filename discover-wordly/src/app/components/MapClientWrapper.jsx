@@ -64,7 +64,6 @@ export default function MapClientWrapper() {
                     // fallback to sample tracks so UI remains usable
                     setTracks(SAMPLE_TRACKS);
                 } else {
-                    console.log('data', data);
                     setTracks(data.tracks && data.tracks.length ? data.tracks : []);
                 }
             })

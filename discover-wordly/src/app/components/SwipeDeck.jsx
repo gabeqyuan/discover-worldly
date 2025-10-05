@@ -31,24 +31,28 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty }) {
 		// Initialize from `tracks` prop when available, otherwise fall back to sampleTracks.
 		const [cards, setCards] = useState(tracks && tracks.length ? tracks : sampleTracks);
 
-		// animating state: when a card is liked/skipped we animate it off-screen first,
-		// then remove it from the deck after the animation completes.
-		const [animating, setAnimating] = useState({ action: null, trackId: null });
+	// animating state: when a card is liked/skipped we animate it off-screen first,
+	// then remove it from the deck after the animation completes.
+	const [animating, setAnimating] = useState({ action: null, trackId: null });
 
-		// likedTracks persist liked songs in localStorage so likes survive page reloads.
-		const [likedTracks, setLikedTracks] = useState(() => {
-			try {
-				const raw = localStorage.getItem("likedTracks");
-				return raw ? JSON.parse(raw) : [];
-			} catch (err) {
-				return [];
+	// likedTracks persist liked songs in localStorage so likes survive page reloads.
+	// Start with empty array and load from localStorage after mount to avoid hydration mismatch
+	const [likedTracks, setLikedTracks] = useState([]);
+
+	// keep a ref to the removal timeout so we can clear if the component unmounts
+	const timeoutRef = useRef(null);
+
+	// Load liked tracks from localStorage after component mounts (client-side only)
+	useEffect(() => {
+		try {
+			const raw = localStorage.getItem("likedTracks");
+			if (raw) {
+				setLikedTracks(JSON.parse(raw));
 			}
-		});
-
-		// keep a ref to the removal timeout so we can clear if the component unmounts
-		const timeoutRef = useRef(null);
-
-		useEffect(() => {
+		} catch (err) {
+			console.error("Failed to load liked tracks from localStorage:", err);
+		}
+	}, []);		useEffect(() => {
 			if (typeof deckEmpty === 'function') {
 				deckEmpty(!cards || cards.length === 0);
 			}
