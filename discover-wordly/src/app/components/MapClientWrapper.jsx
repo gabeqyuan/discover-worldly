@@ -107,9 +107,8 @@ export default function MapClientWrapper() {
             )}
             
 
-            {/* { accessToken && isVoting && tracks && tracks.length > 0 && ( */}
-            {isVoting && tracks && tracks.length > 0 && (
-                <section style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center" }}>
+            { accessToken && isVoting && tracks && tracks.length > 0 && (
+                <section style={{ width: "100%", height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck
                             key={`${country}-${tracks[0]?.spotifyId || 'loading'}`} // Force remount with unique key
