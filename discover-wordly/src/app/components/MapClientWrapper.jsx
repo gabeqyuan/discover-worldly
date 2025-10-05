@@ -43,6 +43,7 @@ export default function MapClientWrapper() {
         
         let mounted = true;
         
+        console.log("country updated")
         // Build URL with optional user token for better access
         let url = `/api/spotify/country-tracks?countryCode=${country}`;
         if (accessToken) {
