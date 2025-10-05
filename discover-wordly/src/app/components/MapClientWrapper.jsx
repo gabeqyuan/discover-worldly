@@ -134,45 +134,31 @@ export default function MapClientWrapper() {
                 </section>
             )}
 
-            {/* Show PlaylistBuilder when deck is empty and user has liked songs */}
-            {!isVoting && !isLoading && likedSongs.length > 0 && (
-                <section style={{ 
-                    position: "fixed", 
-                    bottom: "20px", 
-                    left: "50%", 
-                    transform: "translateX(-50%)",
-                    zIndex: 10,
-                    width: "90%",
-                    maxWidth: "400px"
-                }}>
-                    <PlaylistBuilder
-                        likedSongs={likedSongs}
-                        dislikedSongs={dislikedSongs}
-                        countryCode={country}
-                        userToken={accessToken}
-                        onPlaylistCreated={(playlist) => {
-                            console.log("Playlist created:", playlist);
-                            // Optionally reset the liked/disliked songs after playlist creation
-                            // setLikedSongs([]);
-                            // setDislikedSongs([]);
-                        }}
-                    />
-                </section>
-            )}
-
             {isLoading && (
                 <Loading/>
             )}
 
             {playlistBuilding && (
-                <PlaylistBuilder likedSongs={likedSongs} 
-                dislikedSongs={dislikedSongs} 
-                responseMsg={(m) => {
-                    setResponseMsg(m);
-                    setPlaylistBuilding(false);
-                }}
-                isGenerating={(l) => setIsLoading(l)}
-                />
+                <section style={{ 
+                    width: "100%", 
+                    height: "100vh", 
+                    display: "flex", 
+                    justifyContent: "center", 
+                    alignItems: "center",
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    zIndex: 10
+                }}>
+                    <PlaylistBuilder likedSongs={likedSongs} 
+                    dislikedSongs={dislikedSongs} 
+                    responseMsg={(m) => {
+                        setResponseMsg(m);
+                        setPlaylistBuilding(false);
+                    }}
+                    isGenerating={(l) => setIsLoading(l)}
+                    />
+                </section>
             )}
 
             <MapRender onCountryChange={(c) => {
