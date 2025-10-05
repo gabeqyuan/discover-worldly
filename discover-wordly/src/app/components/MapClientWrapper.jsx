@@ -75,7 +75,7 @@ export default function MapClientWrapper() {
             {/* {!accessToken && <LandingPage />} */}
             
             {/* Show logout button when authenticated */}
-            {accessToken && (
+            {/* accessToken && */ (
                 <div style={{ 
                     position: "absolute", 
                     top: "20px", 

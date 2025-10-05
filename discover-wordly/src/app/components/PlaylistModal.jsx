@@ -62,9 +62,7 @@ export default function PlaylistModal({
           justifyContent: "center",
           zIndex: 1000,
           padding: "20px",
-          backdropFilter: "blur(4px)",
-          overflowY: "auto",
-          minHeight: "100vh"
+          backdropFilter: "blur(4px)"
         }}
         onClick={onClose}
       >
@@ -78,14 +76,11 @@ export default function PlaylistModal({
             borderRadius: "24px",
             maxWidth: "700px",
             width: "100%",
-            maxHeight: "80vh",
+            maxHeight: "85vh",
             overflow: "hidden",
             boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
             border: "1px solid rgba(255,255,255,0.08)",
-            color: "#fff",
-            position: "relative",
-            transform: "translateY(0)",
-            margin: "auto"
+            color: "#fff"
           }}
           onClick={e => e.stopPropagation()}
         >
