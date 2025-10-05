@@ -1,4 +1,4 @@
-# discover-wordly
+# DiscoverWorldly
 
 https://discover-worldly.vercel.app/
 
