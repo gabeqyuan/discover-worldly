@@ -1,5 +1,6 @@
 const CLIENT_ID = '3fa215b2a90a4c0393c475ce82db39fc';
-const REDIRECT_URI = 'https://discover-worldly.vercel.app/';
+// const REDIRECT_URI = 'https://discover-worldly.vercel.app/';
+const REDIRECT_URI = "https://discover-worldly.vercel.app/";
 
 export async function exchangeCodeForToken(code) {
     console.log('Exchanging code for token with redirect URI:', REDIRECT_URI);
