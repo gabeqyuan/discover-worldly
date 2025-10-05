@@ -214,22 +214,6 @@ export default function SwipeDeck({ tracks, onLike, onSkip, deckEmpty, onBackToM
 							);
 						})}
 				</div>
-
-				<div style={{ display: "flex", gap: 12 }}>
-					{/* Quick action buttons that operate on the current top card */}
-					<button
-						onClick={() => handleAction("skip", cards[0])}
-						style={{ padding: "8px 12px", borderRadius: 8 }}
-					>
-						Skip
-					</button>
-					<button
-						onClick={() => handleAction("like", cards[0])}
-						style={{ padding: "8px 12px", borderRadius: 8, background: "#1db954", color: "#fff" }}
-					>
-						Like
-					</button>
-				</div>
 				</div>
 			</div>
 		);

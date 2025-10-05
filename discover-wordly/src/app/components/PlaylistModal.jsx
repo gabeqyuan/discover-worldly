@@ -29,7 +29,14 @@ export default function PlaylistModal({
   const [playlistName, setPlaylistName] = useState(defaultName);
   const [playlistDescription, setPlaylistDescription] = useState("A personalized playlist created by Discover Worldly based on your music preferences");
 
-  if (!isOpen || !recommendations) return null;
+  console.log('[PLAYLIST-MODAL] Render check:', { isOpen, hasRecommendations: !!recommendations });
+  
+  if (!isOpen || !recommendations) {
+    console.log('[PLAYLIST-MODAL] Not rendering - isOpen:', isOpen, 'hasRecommendations:', !!recommendations);
+    return null;
+  }
+  
+  console.log('[PLAYLIST-MODAL] Rendering modal with', recommendations.length, 'recommendations');
 
   const handleCreatePlaylist = () => {
     console.log('[PLAYLIST-MODAL] Create playlist clicked');

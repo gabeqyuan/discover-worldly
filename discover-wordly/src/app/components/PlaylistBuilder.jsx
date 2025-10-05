@@ -65,7 +65,9 @@ export default function PlaylistBuilder({
 
       console.log('[PLAYLIST-BUILDER] Successfully generated', data.recommendations.length, 'recommendations');
       setRecommendations(data.recommendations);
+      console.log('[PLAYLIST-BUILDER] Setting showModal to true');
       setShowModal(true);
+      console.log('[PLAYLIST-BUILDER] showModal state should now be:', true);
     } catch (err) {
       console.error('Playlist generation error:', err);
       
@@ -143,6 +145,7 @@ export default function PlaylistBuilder({
   const canGenerate = likedSongs && likedSongs.length > 0;
 
   return (
+    <>
     <div 
       className="playlist-builder-backdrop"
       style={{
@@ -311,15 +314,20 @@ export default function PlaylistBuilder({
         )}
       </div>
 
-      {/* Playlist Modal */}
-      <PlaylistModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        recommendations={recommendations}
-        onCreatePlaylist={handleCreatePlaylist}
-        isCreating={isCreatingPlaylist}
-        countryCode={countryCode}
-      />
     </div>
+    
+    {/* Render modal outside the backdrop */}
+    <PlaylistModal
+      isOpen={showModal}
+      onClose={() => {
+        console.log('[PLAYLIST-BUILDER] Closing modal');
+        setShowModal(false);
+      }}
+      recommendations={recommendations}
+      onCreatePlaylist={handleCreatePlaylist}
+      isCreating={isCreatingPlaylist}
+      countryCode={countryCode}
+    />
+  </>
   );
 }
