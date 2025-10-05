@@ -62,7 +62,8 @@ export default function PlaylistModal({
           justifyContent: "center",
           zIndex: 1000,
           padding: "20px",
-          backdropFilter: "blur(4px)"
+          backdropFilter: "blur(4px)",
+          overflowY: "auto"
         }}
         onClick={onClose}
       >
@@ -72,14 +73,17 @@ export default function PlaylistModal({
           exit={{ scale: 0.8, opacity: 0, y: 50 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           style={{
-            backgroundColor: "white",
-            borderRadius: "16px",
+            background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
+            borderRadius: "24px",
             maxWidth: "700px",
             width: "100%",
             maxHeight: "85vh",
             overflow: "hidden",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-            border: "1px solid rgba(255, 255, 255, 0.1)"
+            boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            color: "#fff",
+            margin: "auto",
+            alignSelf: "center"
           }}
           onClick={e => e.stopPropagation()}
         >
@@ -140,15 +144,15 @@ export default function PlaylistModal({
           {/* Playlist Details Form */}
           <div style={{
             padding: "28px 32px",
-            borderBottom: "1px solid #e5e7eb",
-            backgroundColor: "#fafbfc"
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            backgroundColor: "rgba(255,255,255,0.03)"
           }}>
             <div style={{ marginBottom: "20px" }}>
               <label style={{
                 display: "block",
                 fontSize: "15px",
                 fontWeight: "600",
-                color: "#374151",
+                color: "#fff",
                 marginBottom: "10px"
               }}>
                 Playlist Name *
@@ -161,19 +165,21 @@ export default function PlaylistModal({
                 style={{
                   width: "100%",
                   padding: "12px 16px",
-                  border: "2px solid #e5e7eb",
+                  border: "2px solid rgba(255,255,255,0.15)",
                   borderRadius: "10px",
                   outline: "none",
                   fontSize: "16px",
                   transition: "border-color 0.2s ease",
-                  boxSizing: "border-box"
+                  boxSizing: "border-box",
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  color: "#fff"
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = "#059669";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.1)";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.2)";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "#e5e7eb";
+                  e.target.style.borderColor = "rgba(255,255,255,0.15)";
                   e.target.style.boxShadow = "none";
                 }}
               />
@@ -183,7 +189,7 @@ export default function PlaylistModal({
                 display: "block",
                 fontSize: "15px",
                 fontWeight: "600",
-                color: "#374151",
+                color: "#fff",
                 marginBottom: "10px"
               }}>
                 Description (Optional)
@@ -196,21 +202,23 @@ export default function PlaylistModal({
                 style={{
                   width: "100%",
                   padding: "12px 16px",
-                  border: "2px solid #e5e7eb",
+                  border: "2px solid rgba(255,255,255,0.15)",
                   borderRadius: "10px",
                   outline: "none",
                   resize: "none",
                   fontSize: "14px",
                   fontFamily: "inherit",
                   transition: "border-color 0.2s ease",
-                  boxSizing: "border-box"
+                  boxSizing: "border-box",
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  color: "#fff"
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = "#059669";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.1)";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(5, 150, 105, 0.2)";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "#e5e7eb";
+                  e.target.style.borderColor = "rgba(255,255,255,0.15)";
                   e.target.style.boxShadow = "none";
                 }}
               />
@@ -222,7 +230,7 @@ export default function PlaylistModal({
             {recommendations.map((track, index) => (
               <div key={index} style={{
                 padding: "16px",
-                borderBottom: "1px solid #f3f4f6",
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
                 display: "flex",
                 alignItems: "center",
                 gap: "16px"
@@ -231,7 +239,7 @@ export default function PlaylistModal({
                   <span style={{
                     fontSize: "14px",
                     fontWeight: "500",
-                    color: "#6b7280"
+                    color: "rgba(255,255,255,0.6)"
                   }}>{index + 1}</span>
                 </div>
                 
@@ -254,7 +262,7 @@ export default function PlaylistModal({
                   <p style={{
                     fontSize: "14px",
                     fontWeight: "500",
-                    color: "#111827",
+                    color: "#fff",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -264,7 +272,7 @@ export default function PlaylistModal({
                   </p>
                   <p style={{
                     fontSize: "14px",
-                    color: "#6b7280",
+                    color: "rgba(255,255,255,0.7)",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -275,7 +283,7 @@ export default function PlaylistModal({
                   {track.reason && (
                     <p style={{
                       fontSize: "12px",
-                      color: "#9ca3af",
+                      color: "rgba(255,255,255,0.5)",
                       marginTop: "4px",
                       margin: "4px 0 0 0",
                       display: "-webkit-box",
@@ -336,15 +344,15 @@ export default function PlaylistModal({
           {/* Footer Actions */}
           <div style={{
             padding: "28px 32px",
-            borderTop: "1px solid #e5e7eb",
-            backgroundColor: "#fafbfc",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+            backgroundColor: "rgba(255,255,255,0.03)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center"
           }}>
             <div style={{
               fontSize: "14px",
-              color: "#6b7280",
+              color: "rgba(255,255,255,0.7)",
               display: "flex",
               alignItems: "center",
               gap: "8px"
@@ -364,22 +372,24 @@ export default function PlaylistModal({
                 onClick={onClose}
                 style={{
                   padding: "12px 24px",
-                  color: "#6b7280",
-                  backgroundColor: "white",
+                  color: "rgba(255,255,255,0.8)",
+                  backgroundColor: "rgba(255,255,255,0.1)",
                   borderRadius: "10px",
-                  border: "2px solid #e5e7eb",
+                  border: "2px solid rgba(255,255,255,0.15)",
                   cursor: "pointer",
                   fontWeight: "500",
                   fontSize: "14px",
                   transition: "all 0.2s ease"
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.borderColor = "#d1d5db";
-                  e.target.style.backgroundColor = "#f9fafb";
+                  e.target.style.borderColor = "rgba(255,255,255,0.3)";
+                  e.target.style.backgroundColor = "rgba(255,255,255,0.15)";
+                  e.target.style.color = "#fff";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.borderColor = "#e5e7eb";
-                  e.target.style.backgroundColor = "white";
+                  e.target.style.borderColor = "rgba(255,255,255,0.15)";
+                  e.target.style.backgroundColor = "rgba(255,255,255,0.1)";
+                  e.target.style.color = "rgba(255,255,255,0.8)";
                 }}
               >
                 Cancel
