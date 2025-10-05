@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 
 // Continent fallback playlists
 const CONTINENT_PLAYLISTS = {
-  "North America": "37i9dQZEVXbLRQDuF5jeBp", // USA Top 50
-  "South America": "37i9dQZEVXbMXbN3EUUhlg", // Brazil Top 50
-  Europe: "37i9dQZEVXbLnolsZ8PSNw", // UK Top 50 (Global)
-  Asia: "37i9dQZEVXbLZ52XmnySJg", // India Top 50
-  Africa: "37i9dQZEVXbMH2jvi6jvjk", // South Africa Top 50
-  Oceania: "37i9dQZEVXbJPcfkRz0wJ0", // Australia Top 50
+  "North America": "4JgPn5zouXilXoM2v1Istn",
+  "South America": "36iYF0nny5q8EpNuEVWZZF",
+  Europe: "0YlKjOoYHRP4ip32kIa549",
+  Asia: "54aDiYiCGEpQNwVSPU2RxG",
+  Africa: "5ofljPANS7OVhLqVt8b6zs",
+  Oceania: "3WBem7NkrBwqDd9CWtz6u3"
 };
 
 // Map country codes to continents
