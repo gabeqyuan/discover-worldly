@@ -12,7 +12,7 @@ export default function MapClientWrapper() {
     const { accessToken, profile, handleLogout } = useAuth();
     const [country, setCountry] = useState(null);
     const [isVoting, setIsVoting] = useState(false);
-    const [responseMsg, setResponseMsg] = useState([]);
+    const [responseMsg, setResponseMsg] = useState("");
     const [likedSongs, setLikedSongs] = useState([]);
     const [dislikedSongs, setDislikedSongs] = useState([]);
     const [tracks, setTracks] = useState(null);
@@ -72,7 +72,7 @@ export default function MapClientWrapper() {
     return (
         <div>
             {/* Show LandingPage overlay if not authenticated */}
-            {!accessToken && <LandingPage />}
+            {/* {!accessToken && <LandingPage />} */}
             
             {/* Show logout button when authenticated */}
             {accessToken && (
@@ -95,12 +95,19 @@ export default function MapClientWrapper() {
                     <span style={{ color: "white", fontWeight: "500" }}>
                         {profile?.display_name || 'User'}
                     </span>
-                    <LogoutButton onLogout={handleLogout} />
+                    <LogoutButton onLogout={() => {
+                        handleLogout;
+                        console.log("logging out");
+                        isVoting(false);
+                        setResponseMsg("");
+                        setDislikedSongs([]);
+                        setLikedSongs([]);
+                    }} />
                 </div>
             )}
             
 
-            { isVoting && tracks && tracks.length > 0 && (
+            { accessToken && isVoting && tracks && tracks.length > 0 && (
                 <section style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck
