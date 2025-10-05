@@ -6,12 +6,13 @@ const COUNTRY_NAMES = {
   US: "United States", CA: "Canada", MX: "Mexico",
   GT: "Guatemala", HN: "Honduras", SV: "El Salvador", NI: "Nicaragua",
   CR: "Costa Rica", PA: "Panama", BZ: "Belize", CU: "Cuba", JM: "Jamaica",
-  HT: "Haiti", DO: "Dominican Republic",
+  HT: "Haiti", DO: "Dominican Republic", GL: "Greenland",
   
   // South America
   BR: "Brazil", AR: "Argentina", CL: "Chile", CO: "Colombia", PE: "Peru",
   VE: "Venezuela", EC: "Ecuador", BO: "Bolivia", PY: "Paraguay", UY: "Uruguay",
-  GY: "Guyana", SR: "Suriname",
+  GY: "Guyana", SR: "Suriname", GF: "French Guiana", FK: "Falkland Islands",
+  GS: "South Georgia and South Sandwich Islands",
   
   // Europe
   GB: "United Kingdom", DE: "Germany", FR: "France", ES: "Spain", IT: "Italy",
@@ -21,18 +22,30 @@ const COUNTRY_NAMES = {
   IE: "Ireland", HR: "Croatia", BG: "Bulgaria", RO: "Romania", UA: "Ukraine",
   RS: "Serbia", SK: "Slovakia", SI: "Slovenia", LT: "Lithuania", LV: "Latvia",
   EE: "Estonia", IS: "Iceland", LU: "Luxembourg", MT: "Malta",
+  AL: "Albania", MK: "North Macedonia", BA: "Bosnia and Herzegovina", ME: "Montenegro",
+  XK: "Kosovo", MD: "Moldova", BY: "Belarus", CY: "Cyprus", GE: "Georgia",
+  AM: "Armenia", AZ: "Azerbaijan", AD: "Andorra", MC: "Monaco", LI: "Liechtenstein",
+  SM: "San Marino", VA: "Vatican City", GI: "Gibraltar", FO: "Faroe Islands",
+  JE: "Jersey", GG: "Guernsey", IM: "Isle of Man", AX: "Aland Islands",
+  SJ: "Svalbard and Jan Mayen",
   
   // Asia
   JP: "Japan", KR: "South Korea", CN: "China", IN: "India", TH: "Thailand",
   ID: "Indonesia", PH: "Philippines", MY: "Malaysia", SG: "Singapore",
   VN: "Vietnam", PK: "Pakistan", BD: "Bangladesh", MM: "Myanmar", KH: "Cambodia",
   LA: "Laos", NP: "Nepal", LK: "Sri Lanka", AF: "Afghanistan", MN: "Mongolia",
-  KZ: "Kazakhstan",
+  KZ: "Kazakhstan", UZ: "Uzbekistan", TM: "Turkmenistan", KG: "Kyrgyzstan",
+  TJ: "Tajikistan", BT: "Bhutan", MV: "Maldives", BN: "Brunei", TL: "East Timor",
+  TW: "Taiwan", HK: "Hong Kong", MO: "Macau", KP: "North Korea",
   
   // Middle East
   TR: "Turkey", SA: "Saudi Arabia", AE: "United Arab Emirates", IL: "Israel",
   IQ: "Iraq", IR: "Iran", SY: "Syria", JO: "Jordan", LB: "Lebanon",
   YE: "Yemen", OM: "Oman", KW: "Kuwait", QA: "Qatar", BH: "Bahrain",
+  PS: "Palestine",
+  
+  // Antarctica and special territories
+  AQ: "Antarctica", BV: "Bouvet Island", GS: "South Georgia",
   
   // Africa
   ZA: "South Africa", NG: "Nigeria", EG: "Egypt", KE: "Kenya", GH: "Ghana",
@@ -40,11 +53,34 @@ const COUNTRY_NAMES = {
   TN: "Tunisia", LY: "Libya", SD: "Sudan", AO: "Angola", MZ: "Mozambique",
   ZW: "Zimbabwe", CI: "Ivory Coast", CM: "Cameroon", SN: "Senegal", ML: "Mali",
   NE: "Niger", BF: "Burkina Faso", TD: "Chad", BJ: "Benin", RW: "Rwanda",
-  SO: "Somalia", MW: "Malawi", ZM: "Zambia",
+  SO: "Somalia", MW: "Malawi", ZM: "Zambia", MG: "Madagascar",
+  CD: "Democratic Republic of Congo", CG: "Republic of Congo", GA: "Gabon",
+  GQ: "Equatorial Guinea", ER: "Eritrea", DJ: "Djibouti", SS: "South Sudan",
+  MR: "Mauritania", GM: "Gambia", GW: "Guinea-Bissau", GN: "Guinea", SL: "Sierra Leone",
+  LR: "Liberia", TG: "Togo", CF: "Central African Republic", BI: "Burundi",
+  LS: "Lesotho", SZ: "Eswatini", BW: "Botswana", NA: "Namibia", MU: "Mauritius",
+  SC: "Seychelles", KM: "Comoros", CV: "Cape Verde", RE: "Reunion", YT: "Mayotte",
+  ST: "Sao Tome and Principe", EH: "Western Sahara", SH: "Saint Helena",
+  IO: "British Indian Ocean Territory", TF: "French Southern Territories", 
   
   // Oceania
   AU: "Australia", NZ: "New Zealand", FJ: "Fiji", PG: "Papua New Guinea",
   NC: "New Caledonia", PF: "French Polynesia", WS: "Samoa", TO: "Tonga",
+  VU: "Vanuatu", SB: "Solomon Islands", KI: "Kiribati", FM: "Micronesia",
+  MH: "Marshall Islands", PW: "Palau", NR: "Nauru", TV: "Tuvalu",
+  CK: "Cook Islands", NU: "Niue", TK: "Tokelau", WF: "Wallis and Futuna",
+  AS: "American Samoa", GU: "Guam", MP: "Northern Mariana Islands",
+  NF: "Norfolk Island", CX: "Christmas Island", CC: "Cocos Islands", 
+  PN: "Pitcairn Islands", HM: "Heard and McDonald Islands",
+  
+  // Caribbean (additional)
+  PR: "Puerto Rico", TT: "Trinidad and Tobago", BB: "Barbados", BS: "Bahamas",
+  LC: "Saint Lucia", GD: "Grenada", VC: "Saint Vincent and the Grenadines",
+  AG: "Antigua and Barbuda", DM: "Dominica", KN: "Saint Kitts and Nevis",
+  AW: "Aruba", CW: "Curacao", SX: "Sint Maarten", BQ: "Bonaire", 
+  VI: "US Virgin Islands", VG: "British Virgin Islands", KY: "Cayman Islands",
+  TC: "Turks and Caicos", BM: "Bermuda", AI: "Anguilla", MS: "Montserrat",
+  MF: "Saint Martin", BL: "Saint Barthelemy", GP: "Guadeloupe", MQ: "Martinique",
 };
 
 // Mapping of country codes to Spotify Top 50 playlist IDs
