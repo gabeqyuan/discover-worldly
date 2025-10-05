@@ -56,13 +56,13 @@ export default function PlaylistModal({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.85)",
+          backgroundColor: "rgba(0, 0, 0, 0.4)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           zIndex: 1100,
           padding: "20px",
-          backdropFilter: "blur(4px)"
+          backdropFilter: "blur(2px)"
         }}
         onClick={onClose}
       >
@@ -86,8 +86,9 @@ export default function PlaylistModal({
         >
           {/* Header */}
           <div style={{
-            padding: "28px 32px",
-            background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+            padding: "24px 32px",
+            background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
             color: "white",
             display: "flex",
             justifyContent: "space-between",
@@ -95,12 +96,17 @@ export default function PlaylistModal({
           }}>
             <div>
               <h2 style={{
-                fontSize: "28px",
-                fontWeight: "bold",
+                fontSize: "24px",
+                fontWeight: "600",
                 color: "white",
                 margin: 0,
-                textShadow: "0 2px 4px rgba(0,0,0,0.2)"
-              }}>🎵 Your AI Playlist</h2>
+                display: "flex",
+                alignItems: "center",
+                gap: "8px"
+              }}>
+                <span style={{ fontSize: "20px" }}>🎵</span>
+                Your AI Playlist
+              </h2>
               <p style={{
                 color: "rgba(255, 255, 255, 0.9)",
                 marginTop: "6px",
@@ -438,8 +444,8 @@ export default function PlaylistModal({
                   </>
                 ) : (
                   <>
-                    <span>🎵</span>
-                    <span>Create Playlist</span>
+                    <span>�</span>
+                    <span>Add to Spotify</span>
                   </>
                 )}
               </button>
