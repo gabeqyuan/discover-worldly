@@ -36,6 +36,7 @@ export default async function PlaylistBuilder({ likedSongs, dislikedSongs, respo
         });
         answer = response.text;
         console.log(answer);
+        if (typeof responseMsg === 'function') responseMsg(answer);
     } catch (error) {
         console.error('Error fetching gemini', error);
     }

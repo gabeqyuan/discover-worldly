@@ -16,8 +16,7 @@ export default function MapClientWrapper() {
     const [likedSongs, setLikedSongs] = useState([]);
     const [dislikedSongs, setDislikedSongs] = useState([]);
     const [tracks, setTracks] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [isLoading, setLoading] = useState(false);
     const [trackSource, setTrackSource] = useState(null); // "country", "continent", or "global"
 
     // small sample track list to pass into the SwipeDeck for testing
@@ -43,8 +42,6 @@ export default function MapClientWrapper() {
         if (!country) return;
         
         let mounted = true;
-        setLoading(true);
-        setError(null);
         
         fetch(`/api/spotify/country-tracks?countryCode=${country}`)
             .then((r) => r.json())
@@ -53,8 +50,6 @@ export default function MapClientWrapper() {
                 console.debug("/api/spotify/country-tracks ->", data);
 
             if (data && data.error) {
-                // API returned an error (likely missing env vars or token problem)
-                setError(data.error + (data.details ? `: ${data.details}` : ""));
                 // fallback to sample tracks so UI remains usable
                 setTracks(SAMPLE_TRACKS);
             } else {
@@ -64,12 +59,8 @@ export default function MapClientWrapper() {
         .catch((err) => {
             console.error("Failed to fetch playlist", err);
             if (mounted) {
-                setError(String(err));
                 setTracks(SAMPLE_TRACKS);
             }
-        })
-        .finally(() => {
-            if (mounted) setLoading(false);
         });
 
         return () => {
@@ -106,39 +97,12 @@ export default function MapClientWrapper() {
                     <LogoutButton onLogout={handleLogout} />
                 </div>
             )}
-
-            <MapRender onCountryChange={(c) => {
-                setCountry(c);
-                setIsVoting(true);
-            }} />
             
-            {/* {!isVoting && (
-                <PlaylistBuilder
-                    likedSongs={likedSongs}
-                    dislikedSongs={dislikedSongs}
-                    responseMsg={(e) => 
-                        setResponseMsg(e)
-                    }
-                />
-            )} */}
-            {/* <Loading /> */}
 
-            {accessToken && isVoting && (
+            {/* {accessToken && isVoting && country ( */}
+            {isVoting && country && (
                 <section style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
-                        <h1 style={{ marginBottom: 12, textAlign: "center" }}>Discover</h1>
-                        {loading ? (
-                            <div style={{ textAlign: "center", padding: "40px", color: "white" }}>
-                                <div style={{ fontSize: 24, marginBottom: 12 }}>🎵</div>
-                                <div>Loading tracks...</div>
-                            </div>
-                        ) : error ? (
-                            <div style={{ textAlign: "center", padding: "40px", color: "#ef4444" }}>
-                                <div style={{ fontSize: 24, marginBottom: 12 }}>⚠️</div>
-                                <div>Error: {error}</div>
-                                <div style={{ fontSize: 14, marginTop: 8, color: "#999" }}>Using sample tracks</div>
-                            </div>
-                        ) : null}
                         <SwipeDeck
                             tracks={tracks || SAMPLE_TRACKS}
                             onLike={(t) => {
@@ -149,29 +113,26 @@ export default function MapClientWrapper() {
                                 console.log("Skipped", t);
                                 setDislikedSongs((prev) => [...prev, t]);
                             }}
-                            deckEmpty={(c) => setIsVoting(!c)}
+                            deckEmpty={(c) => {
+                                setIsVoting(!c);
+                                setLoading(true);
+                                setTimeout(() => {
+                                    setLoading(false);
+                                }, 5000);
+                            }}
                         />
-                        <div style={{ textAlign: "center", marginTop: 16, color: "white" }}>
-                            {country ? (
-                                <div>
-                                    <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>
-                                        {country.toUpperCase()}
-                                    </div>
-                                    {trackSource && trackSource !== "error" && (
-                                        <div style={{ fontSize: 13, opacity: 0.7 }}>
-                                            {trackSource === "country" && "🎵 Top songs from this country"}
-                                            {trackSource === "continent" && "🌍 Top songs from this continent"}
-                                            {trackSource === "global" && "🌐 Global top songs"}
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div style={{ opacity: 0.7 }}>Click a country on the map</div>
-                            )}
-                        </div>
                     </div>
                 </section>
             )}
+
+            {isLoading && (
+                <Loading/>
+            )}
+
+            <MapRender onCountryChange={(c) => {
+                setCountry(c);
+                setIsVoting(true);
+            }} />
         </div>
     );
 }
