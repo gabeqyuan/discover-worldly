@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import MapRender from "./MapRender";
 import SwipeDeck from "./SwipeDeck";
-import PlaylistBuilder from "./PlaylistBuilder";
+// import PlaylistBuilder from "./PlaylistBuilder";
 import Loading from "./Loading";
 import LandingPage from "./LandingPage";
 import LogoutButton from "./LogoutButton";
@@ -41,8 +41,6 @@ export default function MapClientWrapper() {
     useEffect(() => {
         if (!country) return;
         
-        let mounted = true;
-        
         console.log("country updated")
         // Build URL with optional user token for better access
         let url = `/api/spotify/country-tracks?countryCode=${country}`;
@@ -53,7 +51,6 @@ export default function MapClientWrapper() {
         fetch(url)
             .then((r) => r.json())
             .then((data) => {
-                if (!mounted) return;
                 console.debug("/api/spotify/country-tracks ->", data);
 
                 if (data && data.error) {
@@ -73,9 +70,7 @@ export default function MapClientWrapper() {
             })
             .catch((err) => {
                 console.error("Failed to fetch playlist", err);
-                if (mounted) {
-                    setTracks(SAMPLE_TRACKS);
-                }
+                setTracks(SAMPLE_TRACKS);
             });
 
         return () => {
@@ -114,7 +109,7 @@ export default function MapClientWrapper() {
             )}
             
 
-            { isVoting && country && (
+            { isVoting && tracks && (
                 <section style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center" }}>
                     <div style={{ width: 380 }}>
                         <SwipeDeck
