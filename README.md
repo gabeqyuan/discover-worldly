@@ -1,8 +1,8 @@
 # DiscoverWorldly
 
-https://discover-worldly.vercel.app/
+https://discover-worldly.vercel.app/ #deprecated
 
-HackHarvard 2025
+HackHarvard 2025 Culture Track Submission
 ## Inspiration
 Our goal with this project was to tie communities together through music. We felt that music is a core piece of many cultures, and music in different cultures can be very different. A lot of people in the US don't know what is popular in Russia, for example. DiscoverWorldly makes this possible. 
 ## What it does
