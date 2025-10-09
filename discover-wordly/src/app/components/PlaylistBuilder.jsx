@@ -1,6 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+// Add animations if not already present
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('playlist-builder-animations');
+  if (!existingStyle) {
+    const style = document.createElement('style');
+    style.id = 'playlist-builder-animations';
+    style.textContent = `
+      @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
 
 export default function PlaylistBuilder({ 
   likedSongs = [], 
@@ -167,10 +191,10 @@ export default function PlaylistBuilder({
         alignItems: "center",
         gap: "16px",
         padding: "24px",
-        background: "linear-gradient(145deg, #1a1a1a, #0a0a0a)",
-        borderRadius: "24px",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "#1a1a1a",
+        borderRadius: "16px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+        border: "1px solid #333",
         color: "#fff",
         maxWidth: "500px",
         width: "100%",
@@ -183,45 +207,48 @@ export default function PlaylistBuilder({
             position: "absolute",
             top: "16px",
             right: "16px",
-            background: "rgba(255,255,255,0.1)",
-            color: "rgba(255,255,255,0.7)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "12px",
-            padding: "6px 12px",
-            fontSize: "12px",
-            fontWeight: "500",
+            background: "#333",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            padding: "4px",
+            fontSize: "24px",
+            fontWeight: "300",
             cursor: "pointer",
             transition: "all 0.2s ease",
             display: "flex",
             alignItems: "center",
-            gap: "4px"
+            justifyContent: "center",
+            width: "32px",
+            height: "32px"
           }}
           onMouseEnter={(e) => {
-            e.target.style.background = "rgba(255,255,255,0.15)";
-            e.target.style.color = "#fff";
+            e.target.style.background = "#dc2626";
           }}
           onMouseLeave={(e) => {
-            e.target.style.background = "rgba(255,255,255,0.1)";
-            e.target.style.color = "rgba(255,255,255,0.7)";
+            e.target.style.background = "#333";
           }}
         >
           ×
         </button>
         <div style={{ textAlign: "center" }}>
           <h3 style={{
-            fontSize: "18px",
+            fontSize: "20px",
             fontWeight: "600",
             color: "#fff",
             marginBottom: "8px",
-            margin: "0 0 8px 0"
+            margin: "0 0 8px 0",
+            textAlign: "center"
           }}>
-            Create Your Personalized Playlist
+            🎵 Create Your Personalized Playlist
           </h3>
           <p style={{
-            fontSize: "14px",
-            color: "rgba(255,255,255,0.7)",
-            marginBottom: "16px",
-            margin: "0 0 16px 0"
+            fontSize: "15px",
+            color: "rgba(255,255,255,0.8)",
+            marginBottom: "20px",
+            margin: "0 0 20px 0",
+            lineHeight: "1.5",
+            textAlign: "center"
           }}>
             {likedSongs.length > 0 
               ? `Based on ${likedSongs.length} liked song${likedSongs.length === 1 ? '' : 's'}${dislikedSongs.length > 0 ? ` and ${dislikedSongs.length} disliked` : ''}`
@@ -233,14 +260,14 @@ export default function PlaylistBuilder({
         {error && (
           <div style={{
             width: "100%",
-            padding: "12px",
-            backgroundColor: "rgba(239, 68, 68, 0.1)",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
-            color: "#fca5a5",
-            borderRadius: "10px",
-            fontSize: "14px"
+            padding: "12px 16px",
+            background: "#dc2626",
+            color: "#fff",
+            borderRadius: "8px",
+            fontSize: "14px",
+            textAlign: "center"
           }}>
-            {error}
+            ⚠️ {error}
           </div>
         )}
 
@@ -249,31 +276,27 @@ export default function PlaylistBuilder({
           disabled={!canGenerate || isGenerating || !userToken}
           style={{
             padding: "14px 28px",
-            backgroundColor: (!canGenerate || isGenerating || !userToken) ? "#9ca3af" : "#059669",
+            background: (!canGenerate || isGenerating || !userToken) ? "#6b7280" : "#059669",
             color: "white",
-            borderRadius: "12px",
+            borderRadius: "8px",
             fontWeight: "600",
+            fontSize: "16px",
             border: "none",
             cursor: (!canGenerate || isGenerating || !userToken) ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: "10px",
-            fontSize: "16px",
-            boxShadow: (!canGenerate || isGenerating || !userToken) ? "none" : "0 6px 20px rgba(5, 150, 105, 0.4)",
-            transition: "all 0.2s ease"
+            transition: "background-color 0.2s ease"
           }}
           onMouseEnter={(e) => {
             if (canGenerate && !isGenerating && userToken) {
-              e.target.style.backgroundColor = "#047857";
-              e.target.style.transform = "translateY(-2px) scale(1.02)";
-              e.target.style.boxShadow = "0 8px 25px rgba(5, 150, 105, 0.5)";
+              e.target.style.background = "#047857";
             }
           }}
           onMouseLeave={(e) => {
             if (canGenerate && !isGenerating && userToken) {
-              e.target.style.backgroundColor = "#059669";
-              e.target.style.transform = "translateY(0px) scale(1)";
-              e.target.style.boxShadow = "0 6px 20px rgba(5, 150, 105, 0.4)";
+              e.target.style.background = "#059669";
             }
           }}
         >
@@ -299,8 +322,8 @@ export default function PlaylistBuilder({
 
         {!canGenerate && (
           <p style={{
-            fontSize: "12px",
-            color: "rgba(255,255,255,0.5)",
+            fontSize: "13px",
+            color: "rgba(255,255,255,0.7)",
             textAlign: "center",
             margin: 0
           }}>
@@ -310,8 +333,8 @@ export default function PlaylistBuilder({
         
         {!userToken && (
           <p style={{
-            fontSize: "12px",
-            color: "rgba(255,255,255,0.5)",
+            fontSize: "13px",
+            color: "rgba(255,255,255,0.7)",
             textAlign: "center",
             margin: 0
           }}>
