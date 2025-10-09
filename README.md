@@ -1,6 +1,6 @@
 # DiscoverWorldly
 
-https://discover-worldly.vercel.app/ #deprecated
+https://discover-worldly.vercel.app/ #deprecated  
 HackHarvard 2025 Culture Track Submission
 
 ![DiscoverWorldly Login Page](./discover-wordly/public/discover_wordly_login_page.png "DiscoverWorldly Login Page")
