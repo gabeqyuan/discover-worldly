@@ -4,10 +4,14 @@ https://discover-worldly.vercel.app/ #deprecated
 HackHarvard 2025 Culture Track Submission
 
 
-https://github.com/user-attachments/assets/ee9e40ad-8e38-4e17-87c0-cc076cdb41fc
+
+https://github.com/user-attachments/assets/7da52bbe-137a-4c87-b127-8948f0a96a06
 
 
 https://github.com/user-attachments/assets/4a287d41-bda6-45c7-bab7-f4751924bd07
+
+
+https://github.com/user-attachments/assets/991c8a3e-8f93-4cab-b899-413c16e4690e
 
 
 ## Inspiration
